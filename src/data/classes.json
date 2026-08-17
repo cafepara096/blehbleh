@@ -14,6 +14,13 @@
     "skillChoices": "Elige 2 habilidades",
     "features": [
       {
+        "id": "barb-unarmored",
+        "name": "Defensa sin armadura",
+        "level": 1,
+        "description": "Sin armadura, CA = 10 + Des + Con (puedes usar escudo).",
+        "actionType": "passive"
+      },
+      {
         "id": "barb-rage",
         "name": "Furia",
         "level": 1,
@@ -25,13 +32,6 @@
           "perLevels": 3,
           "gainAmount": 1
         }
-      },
-      {
-        "id": "barb-unarmored",
-        "name": "Defensa sin armadura",
-        "level": 1,
-        "description": "Sin armadura, CA = 10 + Des + Con (puedes usar escudo).",
-        "actionType": "passive"
       },
       {
         "id": "barb-weapon-mastery",
@@ -61,6 +61,22 @@
         "description": "Elige subclase (Senda). Ganas rasgos de subclase a 3, 6, 10 y 14.",
         "actionType": "passive",
         "requiresChoice": true
+      },
+      {
+        "id": "barb-path",
+        "name": "Senda primigenia",
+        "description": "Elige una subclase de bárbaro (Senda). Obtienes sus rasgos a los niveles indicados.",
+        "level": 3,
+        "source": "class",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-asi-note",
+        "name": "Mejora de característica",
+        "description": "Aumentas una puntuación de característica en 2 o dos en 1 (máximo 20), o eliges una dote.",
+        "level": 4,
+        "source": "class",
+        "actionType": "passive"
       },
       {
         "id": "barb-extra",
@@ -98,10 +114,26 @@
         "actionType": "passive"
       },
       {
+        "id": "barb-brutal-13",
+        "name": "Golpe brutal mejorado",
+        "description": "Tu Golpe brutal mejora: al criticar con un arma cuerpo a cuerpo, tiras un dado de daño extra adicional (se acumula con mejoras posteriores).",
+        "level": 13,
+        "source": "class",
+        "actionType": "passive"
+      },
+      {
         "id": "barb-persistent",
         "name": "Furia persistente",
         "level": 15,
         "description": "Tu Furia solo termina si estás inconsciente o la terminas voluntariamente.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-brutal-17",
+        "name": "Golpe brutal superior",
+        "description": "Tu Golpe brutal vuelve a mejorar, añadiendo otro dado de daño extra en los críticos con armas cuerpo a cuerpo.",
+        "level": 17,
+        "source": "class",
         "actionType": "passive"
       },
       {
@@ -142,13 +174,6 @@
     },
     "features": [
       {
-        "id": "bard-spell",
-        "name": "Lanzamiento de conjuros",
-        "level": 1,
-        "description": "Lanzas conjuros de bardo (Carisma). Trucos y conjuros conocidos según nivel. Rituales si tienen la etiqueta.",
-        "actionType": "passive"
-      },
-      {
         "id": "bard-insp",
         "name": "Inspiración bárdica",
         "level": 1,
@@ -160,6 +185,13 @@
         }
       },
       {
+        "id": "bard-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Lanzas conjuros de bardo (Carisma). Trucos y conjuros conocidos según nivel. Rituales si tienen la etiqueta.",
+        "actionType": "passive"
+      },
+      {
         "id": "bard-mastery",
         "name": "Maestría con armas",
         "level": 1,
@@ -167,17 +199,17 @@
         "actionType": "passive"
       },
       {
-        "id": "bard-jack",
-        "name": "Polímata (Jack of All Trades)",
-        "level": 2,
-        "description": "Añades la mitad de tu bonificación de competencia (redondeada abajo) a pruebas de característica en las que no seas competente.",
-        "actionType": "passive"
-      },
-      {
         "id": "bard-rest",
         "name": "Canción de descanso",
         "level": 2,
         "description": "En un descanso corto, aliados que oigan tu música recuperan dados de golpe extra.",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-jack",
+        "name": "Polímata (Jack of All Trades)",
+        "level": 2,
+        "description": "Añades la mitad de tu bonificación de competencia (redondeada abajo) a pruebas de característica en las que no seas competente.",
         "actionType": "passive"
       },
       {
@@ -198,17 +230,17 @@
         "choiceHint": "2 habilidades para pericia"
       },
       {
-        "id": "bard-extra",
-        "name": "Ataque extra",
-        "level": 6,
-        "description": "Algunos colegios (Valor/Danza) otorgan ataque extra; el Saber obtiene Secretos mágicos.",
-        "actionType": "passive"
-      },
-      {
         "id": "bard-font",
         "name": "Fuente de inspiración",
         "level": 5,
         "description": "Recuperas usos de Inspiración bárdica en descanso corto o largo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-extra",
+        "name": "Ataque extra",
+        "level": 6,
+        "description": "Algunos colegios (Valor/Danza) otorgan ataque extra; el Saber obtiene Secretos mágicos.",
         "actionType": "passive"
       },
       {
@@ -423,6 +455,13 @@
         "choiceHint": "Estilo de combate"
       },
       {
+        "id": "fig-mastery",
+        "name": "Maestría con armas",
+        "level": 1,
+        "description": "Usas maestrías de armas (2024) con armas competentes.",
+        "actionType": "passive"
+      },
+      {
         "id": "fig-second",
         "name": "Segundo aliento",
         "level": 1,
@@ -432,13 +471,6 @@
           "max": 1,
           "recovery": "short"
         }
-      },
-      {
-        "id": "fig-mastery",
-        "name": "Maestría con armas",
-        "level": 1,
-        "description": "Usas maestrías de armas (2024) con armas competentes.",
-        "actionType": "passive"
       },
       {
         "id": "fig-action-surge",
@@ -508,18 +540,18 @@
     "skillChoices": "Elige 2 habilidades",
     "features": [
       {
-        "id": "mnk-unarmored",
-        "name": "Defensa sin armadura",
-        "level": 1,
-        "description": "Sin armadura ni escudo, CA = 10 + Des + Sab.",
-        "actionType": "passive"
-      },
-      {
         "id": "mnk-martial",
         "name": "Artes marciales",
         "level": 1,
         "description": "Dado de artes marciales en ataques desarmados/armas de monje; acción adicional para golpe desarmado.",
         "actionType": "bonus"
+      },
+      {
+        "id": "mnk-unarmored",
+        "name": "Defensa sin armadura",
+        "level": 1,
+        "description": "Sin armadura ni escudo, CA = 10 + Des + Sab.",
+        "actionType": "passive"
       },
       {
         "id": "mnk-focus",
@@ -599,13 +631,6 @@
     },
     "features": [
       {
-        "id": "pal-sense",
-        "name": "Sentido divino",
-        "level": 1,
-        "description": "Detectas celestiales, fiends y no muertos cercanos (usos = 1 + mod. Carisma).",
-        "actionType": "action"
-      },
-      {
         "id": "pal-hands",
         "name": "Imposición de manos",
         "level": 1,
@@ -613,11 +638,11 @@
         "actionType": "action"
       },
       {
-        "id": "pal-spell",
-        "name": "Lanzamiento de conjuros",
-        "level": 2,
-        "description": "Conjuros de paladín (Carisma). Preparación diaria. Espacios de medio lanzador.",
-        "actionType": "passive"
+        "id": "pal-sense",
+        "name": "Sentido divino",
+        "level": 1,
+        "description": "Detectas celestiales, fiends y no muertos cercanos (usos = 1 + mod. Carisma).",
+        "actionType": "action"
       },
       {
         "id": "pal-smite",
@@ -633,6 +658,13 @@
         "description": "Elige estilo de combate.",
         "actionType": "passive",
         "requiresChoice": true
+      },
+      {
+        "id": "pal-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 2,
+        "description": "Conjuros de paladín (Carisma). Preparación diaria. Espacios de medio lanzador.",
+        "actionType": "passive"
       },
       {
         "id": "pal-sub",
@@ -691,17 +723,17 @@
     },
     "features": [
       {
-        "id": "ran-spell",
-        "name": "Lanzamiento de conjuros",
-        "level": 1,
-        "description": "Conjuros de explorador (Sabiduría). Medio lanzador; conjuros conocidos.",
-        "actionType": "passive"
-      },
-      {
         "id": "ran-favored",
         "name": "Enemigo predilecto / Experto del explorador",
         "level": 1,
         "description": "Ventajas contra tipos de criatura o exploración (2024: rasgos de cazador iniciales).",
+        "actionType": "passive"
+      },
+      {
+        "id": "ran-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Conjuros de explorador (Sabiduría). Medio lanzador; conjuros conocidos.",
         "actionType": "passive"
       },
       {
@@ -712,19 +744,19 @@
         "actionType": "passive"
       },
       {
-        "id": "ran-depletion",
-        "name": "Explorador de terreno / Deft Explorer",
-        "level": 2,
-        "description": "Expertise, movimiento o idiomas según implementación 2024.",
-        "actionType": "passive"
-      },
-      {
         "id": "ran-style",
         "name": "Estilo de combate",
         "level": 2,
         "description": "Elige estilo de combate.",
         "actionType": "passive",
         "requiresChoice": true
+      },
+      {
+        "id": "ran-depletion",
+        "name": "Explorador de terreno / Deft Explorer",
+        "level": 2,
+        "description": "Expertise, movimiento o idiomas según implementación 2024.",
+        "actionType": "passive"
       },
       {
         "id": "ran-sub",
@@ -773,15 +805,6 @@
     "skillChoices": "Elige 4 habilidades",
     "features": [
       {
-        "id": "rog-expertise",
-        "name": "Pericia",
-        "level": 1,
-        "description": "Elige 2 competencias (habilidades o herramientas): duplicas la competencia.",
-        "actionType": "passive",
-        "requiresChoice": true,
-        "choiceHint": "2 pericias"
-      },
-      {
         "id": "rog-sneak",
         "name": "Ataque furtivo",
         "level": 1,
@@ -801,6 +824,15 @@
         "level": 1,
         "description": "Maestría con armas de pícaro (2024).",
         "actionType": "passive"
+      },
+      {
+        "id": "rog-expertise",
+        "name": "Pericia",
+        "level": 1,
+        "description": "Elige 2 competencias (habilidades o herramientas): duplicas la competencia.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "2 pericias"
       },
       {
         "id": "rog-cunning",
@@ -1013,6 +1045,14 @@
         "description": "Cadena, Hoja o Libro (u opciones 2024 equivalentes).",
         "actionType": "passive",
         "requiresChoice": true
+      },
+      {
+        "id": "warlock-subclass-gate",
+        "name": "Patrón sobrenatural",
+        "description": "Tu patrón te otorga rasgos adicionales (subclase). En 2024 el patrón se elige a nivel 1 y se refuerza después; aquí se marca la progresión de subclase.",
+        "level": 3,
+        "source": "class",
+        "actionType": "passive"
       },
       {
         "id": "war-slot5",

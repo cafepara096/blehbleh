@@ -85,6 +85,8 @@ export interface CharacterFeature {
   name: string;
   description: string;
   source?: string; // class, race, feat, background, homebrew
+  /** Level at which this feature is gained (for filtering when managing levels) */
+  level?: number;
   /** Limited-use resource (Second Wind, Rage, Channel Divinity…) */
   uses?: FeatureUses;
   /** Suggested action economy for D&D Beyond-style actions list */

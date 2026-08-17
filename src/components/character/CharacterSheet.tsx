@@ -28,7 +28,7 @@ import {
   AlertCircle,
   X,
 } from 'lucide-react';
-import { LevelUpModal } from './LevelUpModal';
+import { ManageLevelsModal } from './ManageLevelsModal';
 import { SubclassPanel } from './SubclassPanel';
 import { SorceryPointsPanel } from './SorceryPointsPanel';
 import { FeatureTablesPanel } from './FeatureTablesPanel';
@@ -41,6 +41,7 @@ import { ActionsPanel } from './ActionsPanel';
 import { CollapsibleSection } from '../ui/CollapsibleSection';
 import { computeArmorClass } from '../../utils/armorClass';
 import { syncFeatureUsesFromCatalog, syncSpellsFromCatalog } from '../../utils/syncCharacterCatalog';
+import { rebuildFeaturesForLevel } from '../../utils/characterBuilder';
 import { applyFeatureSpellGrants } from '../../utils/featureSpellGrants';
 import { getEquippedPenalties } from '../../utils/equipmentEffects';
 import { useClasses } from '../../hooks/useClasses';
@@ -67,21 +68,35 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
   const { spells: spellCatalog } = useSpells();
   const { backgrounds } = useBackgrounds();
 
-  // Usos de rasgos (Oleada de acción, etc.) + conjuros de raza/clase homebrew
+  // Sincronizar catálogo + rasgos solo hasta el nivel actual (PHB gating)
   useEffect(() => {
     const classData =
       classes.find((c) => c.id === character.classId || c.name === character.class) || null;
     const raceData =
       races.find((r) => r.id === character.raceId || r.name === character.race) || null;
-    let next = syncFeatureUsesFromCatalog(character, classData, raceData);
+    let next = { ...character };
+    // Rebuild class/race/subclass features for current level when catalog or level changes
+    if (classData || raceData) {
+      const rebuilt = rebuildFeaturesForLevel(next, classData || undefined, raceData || undefined, next.level);
+      // Keep feat/background/homebrew that rebuild preserves; merge descriptions from catalog
+      next = { ...next, features: rebuilt };
+    }
+    next = syncFeatureUsesFromCatalog(next, classData, raceData);
     next = syncSpellsFromCatalog(next, classData, raceData, spellCatalog);
     next = applyFeatureSpellGrants(next, spellCatalog);
-    if (next !== character) {
+    // Avoid infinite loop: only update if meaningful change
+    const same =
+      next.features.length === character.features.length &&
+      next.features.every((f, i) => f.id === character.features[i]?.id && f.uses?.max === character.features[i]?.uses?.max) &&
+      JSON.stringify(next.spellSlots) === JSON.stringify(character.spellSlots) &&
+      JSON.stringify(next.spells) === JSON.stringify(character.spells) &&
+      JSON.stringify(next.cantripsKnown) === JSON.stringify(character.cantripsKnown);
+    if (!same) {
       setCharacter(next);
       setDirty(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classes, races, spellCatalog, character.classId, character.raceId, character.level, character.class, character.race]);
+  }, [classes, races, spellCatalog, character.classId, character.raceId, character.level, character.class, character.race, character.subclassId]);
 
 
   // CA automática según armadura/escudo en mano (equipado)
@@ -205,68 +220,18 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
             className="text-xl sm:text-2xl font-display font-bold bg-transparent border-b border-transparent hover:border-parchment-400 focus:border-parchment-300 focus:outline-none w-full"
           />
           <div className="flex flex-wrap gap-2 mt-1 text-sm text-parchment-300">
-            <input
-              value={character.race}
-              onChange={(e) => update({ race: e.target.value })}
-              placeholder="Raza"
-              className="bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none w-24"
-            />
+            <span title="Especie (fija tras la creación)">{character.race}</span>
             <span>•</span>
-            <input
-              value={character.class}
-              onChange={(e) => update({ class: e.target.value })}
-              placeholder="Clase"
-              className="bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none w-28"
-            />
+            <span title="Clase (fija tras la creación)">{character.class}</span>
             {character.subclass && (
-              <>
-                <span>({character.subclass})</span>
-              </>
+              <span className="text-parchment-400">({character.subclass})</span>
             )}
             <span>•</span>
-            <span>Nivel</span>
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={character.level}
-              onChange={(e) =>
-                update({
-                  level: Math.min(20, Math.max(1, parseInt(e.target.value) || 1)),
-                  proficiencyBonus: Math.ceil((parseInt(e.target.value) || 1) / 4) + 1,
-                })
-              }
-              className="w-12 bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none text-center"
-            />
+            <span title="Usa «Gestionar niveles» para cambiar">
+              Nivel <strong className="text-parchment-50">{character.level}</strong>
+            </span>
             <span>•</span>
-            <select
-              value={
-                backgrounds.some((b) => b.name === character.background || b.id === character.backgroundId)
-                  ? (backgrounds.find((b) => b.name === character.background || b.id === character.backgroundId)?.name || character.background)
-                  : character.background || ''
-              }
-              onChange={(e) => {
-                const name = e.target.value;
-                const bg = backgrounds.find((b) => b.name === name);
-                update({
-                  background: name,
-                  backgroundId: bg?.id,
-                });
-              }}
-              className="bg-ink-900/40 border border-parchment-600/40 rounded px-1 py-0.5 text-sm max-w-[9rem]"
-              title="Trasfondo (catálogo + homebrew)"
-            >
-              <option value="">Trasfondo…</option>
-              {backgrounds.map((b) => (
-                <option key={b.id} value={b.name}>
-                  {b.name}{b.homebrew ? ' (HB)' : ''}
-                </option>
-              ))}
-              {character.background &&
-                !backgrounds.some((b) => b.name === character.background) && (
-                  <option value={character.background}>{character.background} (custom)</option>
-                )}
-            </select>
+            <span title="Trasfondo (fijo tras creación)">{character.background || '—'}</span>
             {character.alignment && (
               <>
                 <span>•</span>
@@ -305,8 +270,9 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
           <button
             onClick={() => setShowLevelUp(true)}
             className="flex items-center gap-1 px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-sm font-medium"
+            title="Subir o bajar de nivel, elegir subclase y ASI"
           >
-            <TrendingUp className="w-4 h-4" /> Subir nivel
+            <TrendingUp className="w-4 h-4" /> Gestionar niveles
           </button>
             <button
               type="button"
@@ -894,7 +860,7 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
       )}
 
       {showLevelUp && (
-        <LevelUpModal
+        <ManageLevelsModal
           character={character}
           onClose={() => setShowLevelUp(false)}
           onConfirm={(updated) => {

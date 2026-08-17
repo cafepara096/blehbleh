@@ -191,6 +191,7 @@ export function toCharacterFeatures(
       name: e.name,
       description: e.description,
       source: e.source || source,
+      level: e.level,
       actionType: e.actionType,
     };
     if (e.uses) {
@@ -441,6 +442,151 @@ export function buildCharacterFromWizard(opts: {
 }
 
 /** Levels that grant ASI in 5e */
+
+/** Rebuild class/subclass/race features appropriate for a given level (PHB gating). */
+export function rebuildFeaturesForLevel(
+  character: Character,
+  classData: ClassData | undefined,
+  raceData: RaceData | undefined,
+  level: number
+): CharacterFeature[] {
+  const kept = character.features.filter((f) => {
+    const src = (f.source || '').toLowerCase();
+    // Preserve feats, background, homebrew, and features without level metadata
+    if (src === 'feat' || src === 'background' || src === 'homebrew') return true;
+    if (f.level == null && !src.includes('class') && !src.includes('subclass') && src !== 'race') return true;
+    return false;
+  });
+
+  const out: CharacterFeature[] = [...kept];
+  const seen = new Set(out.map((f) => f.id));
+
+  const push = (entries: FeatureEntry[], source: string) => {
+    for (const e of featuresUpToLevel(entries, level)) {
+      if (seen.has(e.id)) continue;
+      seen.add(e.id);
+      out.push(...toCharacterFeatures([e], source, level));
+    }
+  };
+
+  if (raceData) push(raceData.traits || [], 'race');
+  if (classData) {
+    push(classData.features || [], 'class');
+    if (character.subclassId && classData.subclasses) {
+      const sub = classData.subclasses.find((s) => s.id === character.subclassId);
+      if (sub) push(sub.features || [], 'subclass');
+    }
+  }
+
+  return refreshFeatureUses(out, classData, level);
+}
+
+/** Set character to an absolute level (up or down), recalculating HP average, slots, features. */
+export function setCharacterLevel(
+  character: Character,
+  classData: ClassData | undefined,
+  raceData: RaceData | undefined,
+  targetLevel: number,
+  opts?: {
+    /** When leveling up one step, use this HP gain instead of average */
+    hpGain?: number;
+    asi?: Partial<AbilityScores>;
+    subclassId?: string;
+    subclassName?: string;
+  }
+): Character {
+  const level = Math.min(20, Math.max(1, targetLevel));
+  const prev = character.level;
+  let scores = { ...character.abilityScores };
+  if (opts?.asi) {
+    (Object.keys(opts.asi) as AbilityScore[]).forEach((k) => {
+      scores[k] = Math.min(20, scores[k] + (opts.asi![k] || 0));
+    });
+  }
+
+  const die = hitDieNumber(classData?.hitDie || character.hitDice || 'd8');
+  const conMod = getModifier(scores.con);
+  // Recalculate HP from level 1 using averages (stable when going down)
+  let hpMax = die + conMod;
+  for (let l = 2; l <= level; l++) {
+    if (l === prev + 1 && opts?.hpGain != null && level === prev + 1) {
+      hpMax = character.hitPointMax + opts.hpGain;
+      break;
+    }
+    hpMax += Math.max(1, Math.floor(die / 2) + 1 + conMod);
+  }
+  // If single-step up with explicit gain, prefer that path
+  if (level === prev + 1 && opts?.hpGain != null) {
+    hpMax = character.hitPointMax + opts.hpGain;
+  }
+
+  // Tough feat heuristic
+  if (character.features.some((f) => /resistente|tough/i.test(f.name))) {
+    // rebuild already includes +2/level if we counted from scratch; for single-step use delta
+    if (!(level === prev + 1 && opts?.hpGain != null)) {
+      hpMax = die + conMod + 2; // level 1 with tough
+      for (let l = 2; l <= level; l++) {
+        hpMax += Math.max(1, Math.floor(die / 2) + 1 + conMod) + 2;
+      }
+    } else {
+      hpMax = character.hitPointMax + opts.hpGain;
+    }
+  }
+
+  const subclassId = opts?.subclassId ?? character.subclassId;
+  const subclassName = opts?.subclassName ?? character.subclass;
+  let next: Character = {
+    ...character,
+    level,
+    abilityScores: scores,
+    proficiencyBonus: getProficiencyBonus(level),
+    subclassId,
+    subclass: subclassName,
+    hitDice: `${level}${classData?.hitDie || character.hitDice.replace(/^\d+/, '') || 'd8'}`,
+    hitPointMax: Math.max(1, hpMax),
+    hitPointCurrent: Math.min(character.hitPointCurrent, Math.max(1, hpMax)),
+  };
+
+  next.features = rebuildFeaturesForLevel(next, classData, raceData, level);
+
+  // Spell slots
+  let spellSlots = { ...character.spellSlots };
+  const kind =
+    classData?.spellcasting?.type ||
+    getCasterKindFromClassId(classData?.id || character.classId) ||
+    (character.spellcastingAbility ? 'full' : 'none');
+  if (kind === 'full' || kind === 'half' || kind === 'third') {
+    let casterLevel = level;
+    if (kind === 'half') casterLevel = level < 2 ? 0 : Math.floor(level / 2);
+    if (kind === 'third') casterLevel = level < 3 ? 0 : Math.floor(level / 3);
+    if (casterLevel > 0) {
+      const table = getFullCasterSlots(casterLevel);
+      const slots: Record<number, { max: number; used: number }> = {};
+      for (const [lvlStr, max] of Object.entries(table)) {
+        const lvl = Number(lvlStr);
+        const prevS = spellSlots[lvl];
+        slots[lvl] = { max, used: prevS ? Math.min(prevS.used, max) : 0 };
+      }
+      spellSlots = slots;
+    } else spellSlots = {};
+  } else if (kind === 'pact') {
+    const pact = getPactSlots(level);
+    spellSlots = { [pact.level]: { max: pact.count, used: 0 } };
+  }
+  next.spellSlots = spellSlots;
+
+  if (classData?.id === 'sorcerer' || character.classId === 'sorcerer') {
+    const max = getSorceryPointsMax(level);
+    next.sorceryPoints = {
+      max,
+      current: Math.min(character.sorceryPoints?.current ?? max, max),
+    };
+  }
+
+  return next;
+}
+
+
 export const ASI_LEVELS = [4, 8, 12, 16, 19];
 
 export function isAsiLevel(level: number): boolean {
