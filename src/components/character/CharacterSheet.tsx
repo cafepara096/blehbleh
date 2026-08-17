@@ -1,8 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Character, AbilityScore, SkillId } from '../../types/dnd';
 import { ABILITY_LABELS } from '../../types/dnd';
 import {
-  getModifier,
   formatModifier,
   calculateSavingThrow,
   calculateInitiative,
@@ -10,6 +9,7 @@ import {
   applyDamage,
   heal,
 } from '../../utils/character';
+import { formatSpeed } from '../../utils/units';
 import { AbilityScoreBox } from './AbilityScoreBox';
 import { HitPointsTracker } from './HitPointsTracker';
 import { DeathSaves } from './DeathSaves';
@@ -24,7 +24,29 @@ import {
   Shield,
   Zap,
   Star,
+  TrendingUp,
+  AlertCircle,
+  X,
 } from 'lucide-react';
+import { LevelUpModal } from './LevelUpModal';
+import { SubclassPanel } from './SubclassPanel';
+import { SorceryPointsPanel } from './SorceryPointsPanel';
+import { FeatureTablesPanel } from './FeatureTablesPanel';
+import { ConditionsPanel } from './ConditionsPanel';
+import { CampaignNotesPanel } from './CampaignNotesPanel';
+import { exportCharacterPdf } from '../../utils/exportCharacterPdf';
+import { ALIGNMENTS, getAlignmentInfo } from '../../utils/alignments';
+import { CombatPanel } from './CombatPanel';
+import { ActionsPanel } from './ActionsPanel';
+import { CollapsibleSection } from '../ui/CollapsibleSection';
+import { computeArmorClass } from '../../utils/armorClass';
+import { syncFeatureUsesFromCatalog, syncSpellsFromCatalog } from '../../utils/syncCharacterCatalog';
+import { applyFeatureSpellGrants } from '../../utils/featureSpellGrants';
+import { getEquippedPenalties } from '../../utils/equipmentEffects';
+import { useClasses } from '../../hooks/useClasses';
+import { useRaces } from '../../hooks/useRaces';
+import { useSpells } from '../../hooks/useSpells';
+import { useBackgrounds } from '../../hooks/useBackgrounds';
 
 interface Props {
   character: Character;
@@ -35,8 +57,84 @@ interface Props {
 
 export function CharacterSheet({ character: initial, onSave, onBack, onExport }: Props) {
   const [character, setCharacter] = useState<Character>(initial);
-  const [activeTab, setActiveTab] = useState<'main' | 'inventory' | 'features' | 'notes'>('main');
+  const [activeTab, setActiveTab] = useState<'main' | 'actions' | 'spells' | 'inventory' | 'features' | 'notes'>('main');
   const [dirty, setDirty] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [showPendingChoices, setShowPendingChoices] = useState(false);
+  const [pendingDrafts, setPendingDrafts] = useState<Record<string, string>>({});
+  const { classes } = useClasses();
+  const { races } = useRaces();
+  const { spells: spellCatalog } = useSpells();
+  const { backgrounds } = useBackgrounds();
+
+  // Usos de rasgos (Oleada de acción, etc.) + conjuros de raza/clase homebrew
+  useEffect(() => {
+    const classData =
+      classes.find((c) => c.id === character.classId || c.name === character.class) || null;
+    const raceData =
+      races.find((r) => r.id === character.raceId || r.name === character.race) || null;
+    let next = syncFeatureUsesFromCatalog(character, classData, raceData);
+    next = syncSpellsFromCatalog(next, classData, raceData, spellCatalog);
+    next = applyFeatureSpellGrants(next, spellCatalog);
+    if (next !== character) {
+      setCharacter(next);
+      setDirty(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classes, races, spellCatalog, character.classId, character.raceId, character.level, character.class, character.race]);
+
+
+  // CA automática según armadura/escudo en mano (equipado)
+  useEffect(() => {
+    const ac = computeArmorClass(character);
+    if (ac !== character.armorClass) {
+      setCharacter((c) => ({ ...c, armorClass: ac }));
+      setDirty(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    character.inventory,
+    character.abilityScores.dex,
+    character.abilityScores.con,
+    character.abilityScores.wis,
+    character.classId,
+    character.class,
+  ]);
+
+
+  const unresolvedPending = (character.pendingChoices || []).filter((p) => !p.resolution);
+
+  const resolvePending = () => {
+    const remaining = [];
+    let features = [...character.features];
+    const notes: string[] = [];
+    for (const p of character.pendingChoices || []) {
+      if (p.resolution) continue;
+      const answer = (pendingDrafts[p.id] || '').trim();
+      if (answer) {
+        notes.push(`${p.featureName}: ${answer}`);
+        features = features.map((f) =>
+          f.id === p.featureId || f.name === p.featureName
+            ? { ...f, description: `${f.description}\n\nElección: ${answer}` }
+            : f
+        );
+      } else {
+        remaining.push(p);
+      }
+    }
+    update({
+      features,
+      pendingChoices: remaining,
+      notes: notes.length
+        ? [character.notes || '', '— Elecciones pendientes resueltas —', ...notes]
+            .filter(Boolean)
+            .join('\n')
+        : character.notes,
+    });
+    setPendingDrafts({});
+    if (remaining.length === 0) setShowPendingChoices(false);
+  };
+
 
   const update = useCallback((partial: Partial<Character>) => {
     setCharacter((prev) => ({ ...prev, ...partial }));
@@ -80,22 +178,31 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="bg-ink-900 text-parchment-50 rounded-t-xl p-4 flex flex-wrap items-center gap-4">
+    <div className="max-w-6xl mx-auto w-full">
+      {/* Header estilo D&D Beyond */}
+      <div className="bg-ink-900 text-parchment-50 rounded-t-xl p-3 sm:p-4 flex flex-wrap items-center gap-2 sm:gap-4">
         <button
           onClick={onBack}
           className="p-2 hover:bg-ink-700 rounded-lg transition-colors"
+          title="Volver"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
+
+        {/* Portrait placeholder */}
+        <div
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-ink-700 border-2 border-crimson-500 flex items-center justify-center text-xl sm:text-2xl font-display font-bold shrink-0 shadow-lg"
+          title="Retrato"
+        >
+          {(character.name || '?').charAt(0).toUpperCase()}
+        </div>
 
         <div className="flex-1 min-w-0">
           <input
             type="text"
             value={character.name}
             onChange={(e) => update({ name: e.target.value })}
-            className="text-2xl font-display font-bold bg-transparent border-b border-transparent hover:border-parchment-400 focus:border-parchment-300 focus:outline-none w-full"
+            className="text-xl sm:text-2xl font-display font-bold bg-transparent border-b border-transparent hover:border-parchment-400 focus:border-parchment-300 focus:outline-none w-full"
           />
           <div className="flex flex-wrap gap-2 mt-1 text-sm text-parchment-300">
             <input
@@ -132,16 +239,60 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
               className="w-12 bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none text-center"
             />
             <span>•</span>
-            <input
-              value={character.background}
-              onChange={(e) => update({ background: e.target.value })}
-              placeholder="Trasfondo"
-              className="bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none w-28"
-            />
+            <select
+              value={
+                backgrounds.some((b) => b.name === character.background || b.id === character.backgroundId)
+                  ? (backgrounds.find((b) => b.name === character.background || b.id === character.backgroundId)?.name || character.background)
+                  : character.background || ''
+              }
+              onChange={(e) => {
+                const name = e.target.value;
+                const bg = backgrounds.find((b) => b.name === name);
+                update({
+                  background: name,
+                  backgroundId: bg?.id,
+                });
+              }}
+              className="bg-ink-900/40 border border-parchment-600/40 rounded px-1 py-0.5 text-sm max-w-[9rem]"
+              title="Trasfondo (catálogo + homebrew)"
+            >
+              <option value="">Trasfondo…</option>
+              {backgrounds.map((b) => (
+                <option key={b.id} value={b.name}>
+                  {b.name}{b.homebrew ? ' (HB)' : ''}
+                </option>
+              ))}
+              {character.background &&
+                !backgrounds.some((b) => b.name === character.background) && (
+                  <option value={character.background}>{character.background} (custom)</option>
+                )}
+            </select>
+            {character.alignment && (
+              <>
+                <span>•</span>
+                <span className="text-parchment-400">{character.alignment}</span>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+
+          {unresolvedPending.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setPendingDrafts({});
+                setShowPendingChoices(true);
+              }}
+              className="flex items-center gap-1 px-2 py-1 bg-amber-500 hover:bg-amber-400 text-ink-900 rounded-lg text-xs font-bold animate-pulse"
+              title="Hay elecciones de subida de nivel sin resolver"
+            >
+              <AlertCircle className="w-3.5 h-3.5" />
+              Faltan características a seleccionar ({unresolvedPending.length})
+            </button>
+          )}
+
           {dirty && (
             <span className="text-xs text-amber-400 animate-pulse">Sin guardar</span>
           )}
@@ -151,6 +302,18 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
           >
             <Save className="w-4 h-4" /> Guardar
           </button>
+          <button
+            onClick={() => setShowLevelUp(true)}
+            className="flex items-center gap-1 px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-sm font-medium"
+          >
+            <TrendingUp className="w-4 h-4" /> Subir nivel
+          </button>
+            <button
+              type="button"
+              onClick={() => exportCharacterPdf(character)}
+              className="text-xs px-2 py-1 border border-parchment-400 rounded hover:bg-ink-800"
+            >
+              Exportar PDF</button>
           <button
             onClick={() => onExport(character)}
             className="flex items-center gap-1 px-3 py-2 bg-ink-700 hover:bg-ink-600 rounded-lg text-sm"
@@ -170,6 +333,7 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
               type="number"
               value={character.armorClass}
               onChange={(e) => update({ armorClass: parseInt(e.target.value) || 10 })}
+              title="Se actualiza al equipar armadura/escudo; puedes sobrescribir"
               className="w-12 text-xl font-bold text-center bg-transparent focus:outline-none"
             />
           </div>
@@ -197,6 +361,7 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
               />
               <span className="text-xs">ft</span>
             </div>
+            <div className="text-[10px] text-ink-500 text-center">{formatSpeed(character.speed)}</div>
           </div>
         </div>
 
@@ -236,29 +401,55 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-parchment-100 border-x-2 border-ink-800 flex">
-        {(['main', 'inventory', 'features', 'notes'] as const).map((tab) => (
+      {/* Tabs estilo D&D Beyond */}
+      <div className="bg-parchment-100 border-x-2 border-ink-800 flex overflow-x-auto scroll-touch sticky top-[3.25rem] sm:top-0 z-20 sm:static">
+        {([
+          ['main', 'Resumen'],
+          ['actions', 'Acciones'],
+          ['spells', 'Conjuros'],
+          ['inventory', 'Inventario'],
+          ['features', 'Rasgos'],
+          ['notes', 'Notas'],
+        ] as const).map(([tab, label]) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`px-3 sm:px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
               activeTab === tab
                 ? 'border-crimson-600 text-crimson-700 bg-parchment-50'
                 : 'border-transparent text-ink-600 hover:text-ink-900'
             }`}
           >
-            {tab === 'main' && 'Principal'}
-            {tab === 'inventory' && 'Inventario'}
-            {tab === 'features' && 'Rasgos'}
-            {tab === 'notes' && 'Notas'}
+            {label}
           </button>
         ))}
       </div>
 
       {/* Content */}
-      <div className="bg-parchment-50 border-2 border-t-0 border-ink-800 rounded-b-xl p-4">
+      <div className="bg-parchment-50 border-2 border-t-0 border-ink-800 rounded-b-xl p-3 sm:p-4">
         {activeTab === 'main' && (
+          <>
+          <div className="mb-4 space-y-1">
+            <ConditionsPanel character={character} onUpdate={(partial) => update(partial)} />
+            {(() => {
+              const pens = getEquippedPenalties(character);
+              if (!pens.length) return null;
+              return (
+                <div className="flex flex-wrap gap-1">
+                  {pens.map((pen) => (
+                    <span
+                      key={pen.id}
+                      className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-900 border border-red-300"
+                      title={`Por llevar equipado: ${pen.sourceName}. Se quita al guardar el objeto.`}
+                    >
+                      ⚠ {pen.label}
+                      <span className="opacity-70"> ({pen.sourceName})</span>
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             {/* Ability Scores */}
             <div className="lg:col-span-2 flex lg:flex-col flex-wrap gap-2 justify-center">
@@ -331,14 +522,18 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
                 </div>
               </div>
 
-              {/* Hit Dice */}
-              <div className="bg-parchment-100 border-2 border-ink-800 rounded-lg p-3 shadow-sm flex items-center gap-4">
-                <span className="font-bold text-sm">Dados de Golpe:</span>
+              {/* Hit Dice (HD) — no confundir con el bonus de ataque */}
+              <div className="bg-parchment-100 border-2 border-ink-800 rounded-lg p-3 shadow-sm flex flex-wrap items-center gap-3">
+                <div>
+                  <span className="font-bold text-sm block">HD (dados de golpe)</span>
+                  <span className="text-[10px] text-ink-500">Vida al subir de nivel / curar en descansos — no es el bonus de ataque</span>
+                </div>
                 <input
                   type="text"
                   value={character.hitDice}
                   onChange={(e) => update({ hitDice: e.target.value })}
                   className="w-20 px-2 py-1 border border-ink-400 rounded text-center"
+                  title="Ej: 3d10"
                 />
                 <span className="text-sm text-ink-600">
                   Usados:
@@ -367,6 +562,93 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
                   Descanso Largo
                 </button>
               </div>
+
+              {/* Spell slots on main — interactive */}
+              <div className="bg-purple-50 border-2 border-purple-400 rounded-lg p-3">
+                <div className="text-xs font-bold uppercase text-purple-800 mb-2">
+                  Espacios de conjuro
+                  {character.spellcastingAbility && (
+                    <span className="ml-2 font-normal normal-case text-purple-700">
+                      (caract. {character.spellcastingAbility.toUpperCase()})
+                    </span>
+                  )}
+                </div>
+                {Object.keys(character.spellSlots).length === 0 ? (
+                  <p className="text-xs text-ink-500">
+                    Sin espacios. Los lanzadores los obtienen al crear o subir de nivel.
+                    También puedes gestionarlos en la pestaña Combate.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-4">
+                    {Object.keys(character.spellSlots)
+                      .map(Number)
+                      .sort((a, b) => a - b)
+                      .map((lvl) => {
+                        const s = character.spellSlots[lvl];
+                        return (
+                          <div key={lvl} className="text-center">
+                            <div className="text-[10px] uppercase text-ink-500 font-bold">Niv. {lvl}</div>
+                            <div className="flex gap-1 my-1 justify-center">
+                              {Array.from({ length: s.max }).map((_, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  title={i < s.used ? 'Restaurar' : 'Gastar'}
+                                  onClick={() => {
+                                    const slots = { ...character.spellSlots };
+                                    const cur = { ...slots[lvl] };
+                                    if (i < cur.used) cur.used = Math.max(0, cur.used - 1);
+                                    else if (cur.used < cur.max) cur.used += 1;
+                                    slots[lvl] = cur;
+                                    update({ spellSlots: slots });
+                                  }}
+                                  className={`w-5 h-5 rounded-full border-2 border-purple-700 ${
+                                    i < s.used ? 'bg-purple-700' : 'bg-white hover:bg-purple-100'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <div className="text-xs font-mono font-bold">
+                              {s.max - s.used}/{s.max}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+
+              {/* Languages */}
+              {(character.languages && character.languages.length > 0) && (
+                <div className="bg-parchment-100 border-2 border-ink-800 rounded-lg p-3 shadow-sm">
+                  <div className="text-xs font-bold uppercase text-ink-600 mb-1">Idiomas</div>
+                  <p className="text-sm">{character.languages.join(', ')}</p>
+                </div>
+              )}
+
+              {/* Features & Traits */}
+              <div className="bg-parchment-100 border-2 border-ink-800 rounded-lg p-3 shadow-sm">
+                <div className="text-xs font-bold uppercase text-ink-600 mb-2">Features &amp; Traits</div>
+                {character.features.length === 0 ? (
+                  <p className="text-xs text-ink-500 italic">Sin rasgos</p>
+                ) : (
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {character.features.map((f) => (
+                      <details key={f.id} className="bg-white border border-ink-200 rounded text-xs">
+                        <summary className="px-2 py-1.5 cursor-pointer font-medium flex items-center gap-2">
+                          <span className="flex-1">{f.name}</span>
+                          {f.source && (
+                            <span className="text-[10px] bg-ink-100 px-1.5 rounded capitalize">{f.source}</span>
+                          )}
+                        </summary>
+                        <p className="px-2 pb-2 text-ink-700 whitespace-pre-wrap border-t border-ink-100 pt-1">
+                          {f.description}
+                        </p>
+                      </details>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Skills */}
@@ -378,25 +660,105 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
               />
             </div>
           </div>
+          </>
+        )}
+
+        {activeTab === 'actions' && (
+          <div className="space-y-3">
+            <CollapsibleSection
+              title="Descansos y usos limitados"
+              defaultOpen
+              headerClassName="bg-amber-50 border-amber-400"
+            >
+              <ActionsPanel
+                character={character}
+                onUpdate={(partial) => update(partial)}
+                sections={['rest', 'features']}
+              />
+            </CollapsibleSection>
+            <CollapsibleSection
+              title="Armas y ataques"
+              defaultOpen
+              headerClassName="bg-red-50 border-red-400"
+            >
+              <ActionsPanel
+                character={character}
+                onUpdate={(partial) => update(partial)}
+                sections={['weapons']}
+              />
+            </CollapsibleSection>
+            <CollapsibleSection
+              title="Acciones comunes"
+              defaultOpen={false}
+              headerClassName="bg-ink-100 border-ink-400"
+            >
+              <ActionsPanel
+                character={character}
+                onUpdate={(partial) => update(partial)}
+                sections={['common']}
+              />
+            </CollapsibleSection>
+          </div>
+        )}
+
+        {activeTab === 'spells' && (
+          <div className="space-y-3">
+            <CollapsibleSection
+              title="Espacios de conjuro y hechicería"
+              defaultOpen
+              headerClassName="bg-purple-50 border-purple-400"
+            >
+              <CombatPanel
+                character={character}
+                onUpdate={(partial) => update(partial)}
+                sections={['slots', 'spells']}
+              />
+            </CollapsibleSection>
+            <SorceryPointsPanel character={character} onUpdate={(partial) => update(partial)} />
+            <FeatureTablesPanel character={character} onUpdate={(partial) => update(partial)} />
+          </div>
         )}
 
         {activeTab === 'inventory' && (
           <InventoryPanel
             character={character}
-            onUpdate={(inventory) => update({ inventory })}
+            onUpdate={(partial) => update(partial)}
           />
         )}
 
         {activeTab === 'features' && (
-          <FeaturesPanel
-            character={character}
-            onUpdate={(features) => update({ features })}
-          />
+          <div className="space-y-4">
+            <FeaturesPanel
+              character={character}
+              onUpdate={(features) => update({ features })}
+            />
+            <SubclassPanel character={character} onUpdate={(partial) => update(partial)} />
+          </div>
         )}
 
         {activeTab === 'notes' && (
+          <div className="space-y-6">
+            <CampaignNotesPanel character={character} onUpdate={(partial) => update(partial)} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-bold mb-1">Alineamiento</label>
+                <select
+                  value={character.alignment || ''}
+                  onChange={(e) => update({ alignment: e.target.value })}
+                  className="w-full px-3 py-2 border-2 border-ink-300 rounded-lg bg-white"
+                >
+                  <option value="">— Elegir —</option>
+                  {ALIGNMENTS.map((a) => (
+                    <option key={a.id} value={a.name}>{a.name}</option>
+                  ))}
+                </select>
+                {getAlignmentInfo(character.alignment) && (
+                  <p className="text-xs text-ink-600 mt-1.5 bg-parchment-100 border border-ink-200 rounded px-2 py-1.5">
+                    {getAlignmentInfo(character.alignment)!.description}
+                  </p>
+                )}
+              </div>
               <div>
                 <label className="block text-sm font-bold mb-1">Rasgos de Personalidad</label>
                 <textarea
@@ -464,8 +826,84 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
               </div>
             </div>
           </div>
+          </div>
         )}
       </div>
+
+
+      {showPendingChoices && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 pb-24 sm:p-4 sm:pb-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPendingChoices(false)} />
+          <div className="relative bg-parchment-50 border-2 border-ink-900 rounded-xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-display font-bold flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+                Características por seleccionar
+              </h2>
+              <button type="button" onClick={() => setShowPendingChoices(false)} className="p-1 hover:bg-ink-100 rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-ink-600">
+              Estas opciones se desbloquean al subir de nivel. Elige y anota qué tomas; se guardará en el rasgo correspondiente.
+            </p>
+            {unresolvedPending.map((p) => (
+              <div key={p.id} className="bg-white border-2 border-amber-300 rounded-lg p-3 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <strong className="text-sm">{p.featureName}</strong>
+                  <span className="text-[10px] bg-ink-100 px-1.5 rounded">Nivel {p.levelGained}</span>
+                  {p.source && (
+                    <span className="text-[10px] bg-purple-100 text-purple-800 px-1.5 rounded capitalize">{p.source}</span>
+                  )}
+                </div>
+                <p className="text-xs text-ink-700 whitespace-pre-wrap">{p.description}</p>
+                {p.choiceHint && (
+                  <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                    {p.choiceHint}
+                  </p>
+                )}
+                <input
+                  type="text"
+                  placeholder="Tu elección…"
+                  value={pendingDrafts[p.id] || ''}
+                  onChange={(e) =>
+                    setPendingDrafts((prev) => ({ ...prev, [p.id]: e.target.value }))
+                  }
+                  className="w-full px-2 py-1.5 border-2 border-ink-300 rounded-lg text-sm"
+                />
+              </div>
+            ))}
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={resolvePending}
+                className="flex-1 py-2 bg-crimson-600 hover:bg-crimson-700 text-white rounded-lg font-medium"
+              >
+                Guardar elecciones
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPendingChoices(false)}
+                className="px-4 py-2 bg-ink-200 hover:bg-ink-300 rounded-lg"
+              >
+                Más tarde
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLevelUp && (
+        <LevelUpModal
+          character={character}
+          onClose={() => setShowLevelUp(false)}
+          onConfirm={(updated) => {
+            setCharacter(updated);
+            setDirty(true);
+            setShowLevelUp(false);
+          }}
+        />
+      )}
     </div>
   );
 }

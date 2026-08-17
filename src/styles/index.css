@@ -3,29 +3,57 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply antialiased;
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  html,
+  body,
+  #root {
+    min-height: 100%;
   }
-  ::-webkit-scrollbar-track {
-    @apply bg-parchment-100;
+
+  body {
+    @apply bg-parchment-50 text-ink-900 antialiased;
+    overflow-x: hidden;
+    /* iOS notch / home indicator */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-ink-400 rounded-full;
+
+  /* Touch targets más cómodos */
+  button,
+  [role='button'],
+  a {
+    touch-action: manipulation;
   }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-ink-600;
+
+  /* Inputs en iOS no hacen zoom si font-size >= 16px en móvil */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 }
 
-@layer components {
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number']::-webkit-outer-spin-button {
-    opacity: 1;
+@layer utilities {
+  .safe-pb {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Scroll horizontal de tabs sin barra fea */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-touch::-webkit-scrollbar {
+    display: none;
   }
 }

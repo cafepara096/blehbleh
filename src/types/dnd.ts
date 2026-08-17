@@ -53,11 +53,42 @@ export interface SpellSlot {
   used: number;
 }
 
+export interface FeatureUses {
+  /** Current remaining uses */
+  current: number;
+  /** Maximum uses at this level */
+  max: number;
+  /** short | long | dawn | none */
+  recovery: 'short' | 'long' | 'dawn' | 'none';
+  /** Base max at the level the feature is gained */
+  baseMax?: number;
+  /** Extra uses every N character levels (e.g. 1 every level, or 1 every 2 levels) */
+  perLevels?: number;
+  /** Amount gained each interval */
+  gainAmount?: number;
+}
+
+export interface PendingChoice {
+  id: string;
+  featureId: string;
+  featureName: string;
+  description: string;
+  choiceHint?: string;
+  levelGained: number;
+  source?: string;
+  /** Player resolution text once chosen */
+  resolution?: string;
+}
+
 export interface CharacterFeature {
   id: string;
   name: string;
   description: string;
   source?: string; // class, race, feat, background, homebrew
+  /** Limited-use resource (Second Wind, Rage, Channel Divinity…) */
+  uses?: FeatureUses;
+  /** Suggested action economy for D&D Beyond-style actions list */
+  actionType?: 'action' | 'bonus' | 'reaction' | 'special' | 'passive';
 }
 
 export interface InventoryItem {
@@ -67,14 +98,22 @@ export interface InventoryItem {
   weight?: number;
   description?: string;
   equipped?: boolean;
+  armorClass?: string;
+  armorDexMod?: 'none' | 'full' | 'max2' | 'max3';
   damage?: string;
   damageType?: string;
   properties?: string[];
+  /** Weapon attack uses proficiency bonus when true (default true for weapons) */
+  proficient?: boolean;
+  /** Link to items catalog — live stats on character sheet */
+  catalogId?: string;
 }
 
 export interface Spell {
   id: string;
   name: string;
+  /** English name for search / dual label */
+  nameEn?: string;
   level: number; // 0 = cantrip
   school: string;
   castingTime: string;
@@ -102,9 +141,15 @@ export interface Character {
   name: string;
   playerName?: string;
   race: string;
+  raceId?: string;
   class: string;
+  classId?: string;
   subclass?: string;
+  subclassId?: string;
   background: string;
+  backgroundId?: string;
+  /** Chosen languages from race/background */
+  languages?: string[];
   alignment?: string;
   level: number;
   experience: number;
@@ -142,12 +187,22 @@ export interface Character {
 
   // Features & Traits
   features: CharacterFeature[];
+  /** Unresolved choices from level-up / subclass (skill picks, fighting style, etc.) */
+  pendingChoices?: PendingChoice[];
 
   // Spells
   spellcastingAbility?: AbilityScore;
   spellSlots: Record<number, SpellSlot>; // level 1-9
   spells: CharacterSpell[];
   cantripsKnown: string[];
+  /** Sorcerer (2024): puntos de hechicería — intercambiables con espacios */
+  sorceryPoints?: { current: number; max: number };
+  /** Metamagia conocida (ids de METAMAGIC_OPTIONS / homebrew) */
+  metamagicKnown?: string[];
+  /** Maniobras del Maestro de Batalla conocidas */
+  maneuversKnown?: string[];
+  /** Último resultado de oleada de magia salvaje (texto) */
+  lastWildSurge?: string;
 
   // Equipment
   inventory: InventoryItem[];
@@ -158,9 +213,15 @@ export interface Character {
     gp: number;
     pp: number;
   };
+  /** Monedas ocultas en la UI (siguen en conversiones) */
+  disabledCoins?: Array<'cp' | 'sp' | 'ep' | 'gp' | 'pp'>;
 
   // Notes
   notes?: string;
+  /** Estados activos (D&D 2024 + homebrew) */
+  conditions?: string[];
+  /** Notas de campaña en paneles */
+  campaignNotes?: { id: string; title: string; body: string; updatedAt?: string }[];
   appearance?: string;
   backstory?: string;
 
@@ -173,25 +234,39 @@ export interface Character {
 export interface Monster {
   id: string;
   name: string;
+  nameEn?: string;
   size: string;
   type: string;
-  alignment: string;
+  alignment?: string;
   armorClass: number;
   hitPoints: string;
   speed: string;
   abilityScores: AbilityScores;
+  /** aliases planos opcionales (compat) */
+  str?: number;
+  dex?: number;
+  con?: number;
+  int?: number;
+  wis?: number;
+  cha?: number;
   savingThrows?: string;
+  saves?: string;
   skills?: string;
   damageResistances?: string;
   damageImmunities?: string;
   conditionImmunities?: string;
-  senses: string;
-  languages: string;
+  senses?: string;
+  languages?: string;
   challengeRating: string;
+  /** alias */
+  challenge?: string;
   proficiencyBonus?: number;
   traits?: { name: string; description: string }[];
-  actions?: { name: string; description: string; damage?: string }[];
+  actions?: { name: string; description: string; damage?: string; damageType?: string; attackBonus?: number }[];
+  bonusActions?: { name: string; description: string; damage?: string }[];
+  reactions?: { name: string; description: string }[];
   legendaryActions?: { name: string; description: string }[];
+  variants?: { name: string; description: string }[];
   homebrew?: boolean;
   description?: string;
 }
@@ -199,6 +274,8 @@ export interface Monster {
 export interface Item {
   id: string;
   name: string;
+  /** English name for search / dual label */
+  nameEn?: string;
   type: string; // weapon, armor, potion, wondrous, etc.
   rarity: string;
   attunement?: boolean;
@@ -207,9 +284,92 @@ export interface Item {
   damageType?: string;
   properties?: string[];
   armorClass?: string;
+  /** Cómo aplica el modificador de Destreza a la CA de esta armadura */
+  armorDexMod?: 'none' | 'full' | 'max2' | 'max3';
   weight?: number;
   cost?: string;
   homebrew?: boolean;
 }
 
-export type ContentType = 'spell' | 'monster' | 'item' | 'character';
+
+// ===== Class & Race (structured for future character sheet linking) =====
+
+export interface FeatureEntry {
+  id: string;
+  name: string;
+  description: string;
+  /** Level at which this feature is gained (1 for racial traits) */
+  level: number;
+  /** Optional link to a spell id from the spells catalog */
+  spellId?: string;
+  source?: string;
+  /** Automatic ability score bonuses granted by this feature (applied on character create) */
+  abilityBonuses?: Partial<Record<AbilityScore, number>>;
+  /** Limited uses definition for catalog features */
+  uses?: {
+    max: number;
+    recovery: 'short' | 'long' | 'dawn' | 'none';
+    /** Gain +gainAmount max uses every perLevels levels after the feature level */
+    perLevels?: number;
+    gainAmount?: number;
+  };
+  actionType?: 'action' | 'bonus' | 'reaction' | 'special' | 'passive';
+  /** If true, level-up should prompt the player to choose something for this feature */
+  requiresChoice?: boolean;
+  choiceHint?: string;
+}
+
+export interface RaceData {
+  id: string;
+  name: string;
+  description: string;
+  size: string;
+  speed: number; // feet
+  abilityScoreIncrease: string;
+  languages: string[];
+  traits: FeatureEntry[];
+  /** Optional spell ids granted by the race */
+  spellIds?: string[];
+  homebrew?: boolean;
+}
+
+export interface ClassData {
+  id: string;
+  name: string;
+  description: string;
+  hitDie: string; // e.g. "d10"
+  primaryAbility: string;
+  savingThrows: string[];
+  armorProficiencies: string;
+  weaponProficiencies: string;
+  toolProficiencies?: string;
+  skillChoices: string;
+  /** Features keyed by level */
+  features: FeatureEntry[];
+  /** Spellcasting info if any */
+  spellcasting?: {
+    ability: AbilityScore;
+    type: 'full' | 'half' | 'third' | 'pact';
+    /** Cantrip/spell ids often known at level 1 (optional seeds) */
+    starterSpellIds?: string[];
+  };
+  subclasses?: { id: string; name: string; description: string; features: FeatureEntry[] }[];
+  homebrew?: boolean;
+}
+
+
+export interface BackgroundData {
+  id: string;
+  name: string;
+  description: string;
+  skillProficiencies?: string[];
+  toolProficiencies?: string[];
+  languages?: { count: number; description: string };
+  equipment?: string[];
+  feature?: { name: string; description: string };
+  originFeat?: { name: string; description: string };
+  originFeatChoices?: { id: string; name: string; description: string }[];
+  homebrew?: boolean;
+}
+
+export type ContentType = 'spell' | 'monster' | 'item' | 'character' | 'race' | 'class' | 'background';
