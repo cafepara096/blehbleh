@@ -47,7 +47,6 @@ import { getEquippedPenalties } from '../../utils/equipmentEffects';
 import { useClasses } from '../../hooks/useClasses';
 import { useRaces } from '../../hooks/useRaces';
 import { useSpells } from '../../hooks/useSpells';
-import { useBackgrounds } from '../../hooks/useBackgrounds';
 
 interface Props {
   character: Character;
@@ -66,7 +65,6 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
   const { classes } = useClasses();
   const { races } = useRaces();
   const { spells: spellCatalog } = useSpells();
-  const { backgrounds } = useBackgrounds();
 
   // Sincronizar catálogo + rasgos solo hasta el nivel actual (PHB gating)
   useEffect(() => {
