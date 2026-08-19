@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { AbilityScore, AbilityScores, Character } from '../../types/dnd';
-import { ABILITY_LABELS } from '../../types/dnd';
+import { ABILITY_LABELS, SKILLS } from '../../types/dnd';
 import { useRaces } from '../../hooks/useRaces';
 import { useClasses } from '../../hooks/useClasses';
 import { useBackgrounds } from '../../hooks/useBackgrounds';
@@ -14,8 +14,8 @@ import {
   COMMON_LANGUAGES,
   CLASS_SKILL_OPTIONS,
 } from '../../utils/characterBuilder';
-import { ALIGNMENTS } from '../../utils/alignments';
-import { expandStartingOption } from '../../utils/equipmentPacks';
+import { ALIGNMENTS, getAlignmentInfo } from '../../utils/alignments';
+import { expandStartingOption, expandPackItems, packSummary } from '../../utils/equipmentPacks';
 import {
   needsWeaponPick,
   weaponsForChoice,
@@ -41,6 +41,48 @@ import {
 } from 'lucide-react';
 
 const ABILITIES: AbilityScore[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+
+/** Descripción breve de qué hace cada habilidad (PHB) */
+const SKILL_HELP: Record<string, string> = {
+  Acrobacias: 'Mantener el equilibrio, volteretas, aterrizajes y maniobras ágiles (Des).',
+  'Trato con Animales': 'Calmar, leer o manejar animales (Sab).',
+  Arcanos: 'Conocimiento de magia, objetos mágicos, símbolos y planos (Int).',
+  Atletismo: 'Trepar, saltar, nadar y proezas de fuerza (Fue).',
+  Engaño: 'Mentir, disimular o engañar con palabras o apariencia (Car).',
+  Historia: 'Hechos del pasado, civilizaciones, guerras y leyendas (Int).',
+  Perspicacia: 'Leer intenciones, detectar mentiras o estados de ánimo (Sab).',
+  Intimidación: 'Influir mediante amenazas, presencia o coacción (Car).',
+  Investigación: 'Buscar pistas, deducir y examinar detalles (Int).',
+  Medicina: 'Diagnosticar, estabilizar y tratar heridas (Sab).',
+  Naturaleza: 'Terreno, plantas, animales, clima y ciclos naturales (Int).',
+  Percepción: 'Detectar presencias, sonidos, olores y detalles ocultos (Sab).',
+  Interpretación: 'Actuar, cantar, bailar u otras artes ante un público (Car).',
+  Persuasión: 'Convencer con tacto, diplomacia o buenos argumentos (Car).',
+  Religión: 'Ritos, deidades, cultos y lore sagrado (Int).',
+  'Juego de Manos': 'Hurtar, escamotear o manipular objetos con discreción (Des).',
+  Sigilo: 'Esconderse, moverse en silencio y pasar desapercibido (Des).',
+  Supervivencia: 'Rastrear, orientarse, cazar y vivir en la naturaleza (Sab).',
+};
+
+function skillAbilityLabel(skillName: string): string {
+  const sk = SKILLS.find(
+    (s) => s.name.toLowerCase() === skillName.toLowerCase()
+  );
+  return sk ? ABILITY_LABELS[sk.ability] : '';
+}
+
+function formatItemList(name: string): string | null {
+  const summary = packSummary(name);
+  if (summary) return summary;
+  const items = expandPackItems(name);
+  if (items?.length) {
+    return items
+      .map((i) => (i.quantity && i.quantity > 1 ? `${i.name} ×${i.quantity}` : i.name))
+      .join(', ');
+  }
+  return null;
+}
+
 
 interface Props {
   onComplete: (character: Character) => void;
@@ -571,23 +613,34 @@ export function CharacterWizard({ onComplete, onCancel }: Props) {
               <div className="space-y-4">
                 <div>
                   <h2 className="font-display font-bold text-lg">Competencias e idiomas</h2>
-                  <p className="text-sm text-ink-600">Elige las habilidades de clase. Las del trasfondo ya están incluidas.</p>
+                  <p className="text-sm text-ink-600">
+                    Elige las habilidades de clase. Con competencia sumas tu bonificador de competencia
+                    a las pruebas de esa habilidad. Las del trasfondo ya están incluidas.
+                  </p>
                 </div>
                 {skillOpts && (
                   <div>
                     <h3 className="font-bold text-sm mb-2">Habilidades de clase ({chosenClassSkills.length}/{skillOpts.count})</h3>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {skillOpts.skills.map((sk) => {
                         const selected = chosenClassSkills.includes(sk);
                         const bgSkill = background?.skillProficiencies?.some((s) => s.toLowerCase() === sk.toLowerCase());
+                        const abil = skillAbilityLabel(sk);
+                        const help = SKILL_HELP[sk] || '';
                         return (
                           <button key={sk} type="button" disabled={!!bgSkill} onClick={() => toggleSkill(sk)}
-                            className={`px-2.5 py-1 rounded-full text-xs border-2 ${
+                            className={`text-left px-3 py-2 rounded-xl border-2 transition ${
                               bgSkill ? 'border-ink-300 bg-ink-100 text-ink-400 cursor-not-allowed'
-                              : selected ? 'border-crimson-600 bg-crimson-50 font-bold' : 'border-ink-300 hover:border-ink-500'
+                              : selected ? 'border-crimson-600 bg-crimson-50' : 'border-ink-300 hover:border-ink-500 bg-white'
                             }`}
-                            title={bgSkill ? 'Ya otorgada por trasfondo' : undefined}>
-                            {sk}{bgSkill ? ' ✓' : ''}
+                            title={bgSkill ? 'Ya otorgada por trasfondo' : help}>
+                            <div className="font-bold text-sm flex items-center gap-2 flex-wrap">
+                              {sk}
+                              {abil && <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-ink-100 text-ink-700">{abil}</span>}
+                              {bgSkill && <span className="text-[10px] text-ink-500">trasfondo</span>}
+                              {selected && !bgSkill && <span className="text-crimson-700 text-xs">✓</span>}
+                            </div>
+                            {help && <p className="text-[11px] text-ink-600 mt-0.5 leading-snug">{help}</p>}
                           </button>
                         );
                       })}
@@ -644,22 +697,46 @@ export function CharacterWizard({ onComplete, onCancel }: Props) {
                   return (
                     <div className="space-y-3">
                       {pack.fixed?.length > 0 && (
-                        <div className="text-sm">
-                          <strong>Fijo:</strong>{' '}
-                          {pack.fixed.map((f: any) => f.name || f).join(', ')}
+                        <div className="text-sm space-y-1 bg-ink-50 border border-ink-200 rounded-lg p-3">
+                          <strong>Equipo fijo</strong>
+                          <ul className="list-disc pl-5 text-xs text-ink-700 space-y-1">
+                            {pack.fixed.map((f: any, i: number) => {
+                              const n = f.name || String(f);
+                              const contents = formatItemList(n);
+                              return (
+                                <li key={i}>
+                                  <span className="font-medium">{n}</span>
+                                  {contents && (
+                                    <span className="block text-ink-600">→ {contents}</span>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ul>
                         </div>
                       )}
                       {(pack.choices || []).map((c: any) => (
                         <div key={c.id} className="border-2 border-ink-200 rounded-xl p-3">
                           <div className="font-bold text-sm mb-2">{c.label || c.id}</div>
                           <div className="space-y-1">
-                            {c.options.map((opt: any, idx: number) => (
+                            {c.options.map((opt: any, idx: number) => {
+                              const optName = opt.name || String(opt);
+                              const contents = formatItemList(optName);
+                              return (
                               <label key={idx} className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer ${equipChoices[c.id] === idx ? 'bg-crimson-50' : 'hover:bg-ink-50'}`}>
                                 <input type="radio" name={`eq-${c.id}`} checked={equipChoices[c.id] === idx}
-                                  onChange={() => setEquipChoices((prev) => ({ ...prev, [c.id]: idx }))} />
-                                <span className="text-sm">{opt.name || String(opt)}</span>
+                                  onChange={() => setEquipChoices((prev) => ({ ...prev, [c.id]: idx }))} className="mt-1" />
+                                <span className="text-sm min-w-0">
+                                  <span className="font-medium">{optName}</span>
+                                  {contents && (
+                                    <span className="block text-[11px] text-ink-600 mt-0.5 leading-snug">
+                                      Incluye: {contents}
+                                    </span>
+                                  )}
+                                </span>
                               </label>
-                            ))}
+                              );
+                            })}
                           </div>
                           {equipChoices[c.id] !== undefined && needsWeaponPick(c.options[equipChoices[c.id]]?.name || '') && (
                             <div className="mt-2 pl-6 space-y-1">
@@ -710,6 +787,17 @@ export function CharacterWizard({ onComplete, onCancel }: Props) {
                     <option value="">— Opcional —</option>
                     {ALIGNMENTS.map((a) => <option key={a.id} value={a.name}>{a.name}</option>)}
                   </select>
+                  {getAlignmentInfo(alignment) && (
+                    <p className="mt-2 text-sm text-ink-700 bg-amber-50 border border-amber-200 rounded-lg p-3 leading-snug">
+                      <strong>{getAlignmentInfo(alignment)!.name}.</strong>{' '}
+                      {getAlignmentInfo(alignment)!.description}
+                    </p>
+                  )}
+                  {!alignment && (
+                    <p className="mt-1 text-xs text-ink-500">
+                      Elige un alineamiento para ver su descripción. En el PHB 2024 es opcional.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
