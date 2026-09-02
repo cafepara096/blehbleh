@@ -99,3 +99,75 @@ export const WILD_MAGIC_SURGE: { roll: string; effect: string }[] = [
 export const STORAGE_METAMAGIC = 'dnd-homebrew-metamagic';
 export const STORAGE_MANEUVERS = 'dnd-homebrew-maneuvers';
 export const STORAGE_WILD = 'dnd-homebrew-wild-surge';
+
+/** Estilos de combate (PHB 2024, resumen) */
+export const FIGHTING_STYLES: TableOption[] = [
+  { id: 'archery', name: 'Tiro con arco', description: '+2 a las tiradas de ataque con armas a distancia.' },
+  { id: 'defense', name: 'Defensa', description: '+1 CA mientras llevas armadura.' },
+  { id: 'dueling', name: 'Duelo', description: '+2 daño con arma cuerpo a cuerpo de una mano si no empuñas otra arma.' },
+  { id: 'great-weapon', name: 'Combate con armas a dos manos', description: 'Con arma a dos manos, puedes volver a tirar 1 y 2 en dados de daño (debes usar el nuevo resultado).' },
+  { id: 'protection', name: 'Protección', description: 'Con escudo, reacción para imponer desventaja a un ataque contra un aliado a 5 ft.' },
+  { id: 'two-weapon', name: 'Combate con dos armas', description: 'Al atacar con dos armas, puedes añadir el modificador de característica al daño del ataque adicional.' },
+  { id: 'thrown', name: 'Armas arrojadizas', description: 'Bonus al ataque/daño con armas arrojadizas y puedes desenvainarlas con más facilidad (2024).' },
+  { id: 'blind-fighting', name: 'Combate a ciegas', description: 'Visión ciega limitada (p. ej. 10 ft) mientras estás consciente.' },
+  { id: 'interception', name: 'Intercepción', description: 'Reacción para reducir el daño a un aliado cercano cuando es golpeado.' },
+  { id: 'unarmed', name: 'Lucha sin armas', description: 'Tus golpes sin armas infligen más daño y pueden empujar/derribar según reglas 2024.' },
+];
+
+/** Bendiciones de pacto (warlock) */
+export const PACT_BOONS: TableOption[] = [
+  { id: 'pact-chain', name: 'Pacto de la cadena', description: 'Ganas un familiar mejorado (formas especiales) y puedes comunicar/actuar a través de él.' },
+  { id: 'pact-blade', name: 'Pacto de la hoja', description: 'Creas o vinculas un arma de pacto; usas Carisma para atacar con ella si quieres.' },
+  { id: 'pact-tome', name: 'Pacto del grimorio', description: 'Recibes un Libro de sombras con trucos y rituales adicionales.' },
+  { id: 'pact-talisman', name: 'Pacto del talismán', description: 'Un talismán que otorga bonus a pruebas de habilidad fallidas (usos limitados).' },
+];
+
+/** Invocaciones místicas (muestra PHB 2024; ampliables por homebrew) */
+export const ELDRITCH_INVOCATIONS: TableOption[] = [
+  { id: 'agonizing', name: 'Explosión agonizante', description: 'Añades tu modificador de Carisma al daño de Explosión mística / Eldritch Blast.' },
+  { id: 'armor-shadows', name: 'Armadura de sombras', description: 'Puedes lanzar Armadura de mago sobre ti a voluntad (sin espacios), si no llevas armadura.' },
+  { id: 'devils-sight', name: 'Vista del diablo', description: 'Ves normalmente en oscuridad mágica y no mágica hasta 120 ft.' },
+  { id: 'fiendish-vigor', name: 'Vigor diabólico', description: 'Puedes lanzar Falsa vida sobre ti a voluntad como un truco (versión de nivel 1).' },
+  { id: 'mask-many', name: 'Máscara de muchos rostros', description: 'Disfrazarse a voluntad sin componentes.' },
+  { id: 'misty-visions', name: 'Visiones brumosas', description: 'Lanzas Imagen silenciosa a voluntad sin componentes.' },
+  { id: 'repelling', name: 'Explosión repelente', description: 'Cuando golpeas con Eldritch Blast, puedes empujar al objetivo 10 ft.' },
+  { id: 'thirsting', name: 'Hoja sedienta', description: 'Con arma de pacto, puedes atacar dos veces al usar la acción Atacar (requisitos de nivel).' },
+  { id: 'book-ancient', name: 'Libro de secretos antiguos', description: 'Con grimorio: ganas rituales adicionales en el Libro de sombras.' },
+  { id: 'gaze-two-minds', name: 'Mirada de dos mentes', description: 'Puedes percibir a través de los sentidos de una criatura voluntaria tocada.' },
+  { id: 'one-with-shadows', name: 'Uno con las sombras', description: 'En luz tenue u oscuridad, acción para volverte invisible hasta que te muevas o actúes.' },
+  { id: 'eldritch-mind', name: 'Mente sobrenatural', description: 'Ventaja en salvaciones de Constitución para mantener concentración.' },
+  { id: 'eldritch-spear', name: 'Lanza sobrenatural', description: 'Aumenta el alcance de Eldritch Blast.' },
+  { id: 'investment-chain', name: 'Inversión de la cadena', description: 'Mejoras a tu familiar de pacto (requisito: pacto de la cadena).' },
+];
+
+export type ChoiceCatalogKey =
+  | 'fighting-style'
+  | 'metamagic'
+  | 'maneuvers'
+  | 'invocation'
+  | 'pact-boon';
+
+export function getChoiceCatalog(key: string): TableOption[] {
+  switch (key) {
+    case 'fighting-style':
+      return FIGHTING_STYLES;
+    case 'metamagic':
+      return METAMAGIC_OPTIONS;
+    case 'maneuvers':
+      return BATTLE_MASTER_MANEUVERS;
+    case 'invocation':
+      return ELDRITCH_INVOCATIONS;
+    case 'pact-boon':
+      return PACT_BOONS;
+    default:
+      return [];
+  }
+}
+
+export const CHOICE_CATALOG_LABELS: Record<string, string> = {
+  'fighting-style': 'Estilos de combate',
+  metamagic: 'Metamagia',
+  maneuvers: 'Maniobras',
+  invocation: 'Invocaciones místicas',
+  'pact-boon': 'Bendición de pacto',
+};

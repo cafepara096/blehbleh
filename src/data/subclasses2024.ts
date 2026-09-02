@@ -198,9 +198,9 @@ export const SUBCLASSES_2024: Record<string, SubclassDef[]> = {
       name: 'Maestro de Batalla',
       description: 'Maniobras y dados de superioridad.',
       features: [
-        { id: 'bm-3', name: 'Maniobras', description: 'Aprendes 3 maniobras y ganas dados de superioridad (d8). Elige las maniobras.', level: 3, source: 'subclass', requiresChoice: true, choiceHint: 'Anota 3 maniobras.', actionType: 'special', uses: { max: 4, recovery: 'short' } },
+        { id: 'bm-3', name: 'Maniobras', description: 'Aprendes 3 maniobras y ganas dados de superioridad (d8). Elige las maniobras.', level: 3, source: 'subclass', requiresChoice: true, choiceHint: 'Elige 3 maniobras de la lista.', choiceKey: 'maneuvers', actionType: 'special', uses: { max: 4, recovery: 'short' } },
         { id: 'bm-7', name: 'Conoce a tu enemigo', description: 'Estudias a una criatura para aprender rasgos de combate.', level: 7, source: 'subclass', actionType: 'action' },
-        { id: 'bm-10', name: 'Mejora de maniobras', description: 'Dados de superioridad pasan a d10; aprendes más maniobras.', level: 10, source: 'subclass', actionType: 'passive' },
+        { id: 'bm-10', name: 'Mejora de maniobras', description: 'Dados de superioridad pasan a d10; aprendes más maniobras.', level: 10, source: 'subclass', requiresChoice: true, choiceHint: 'Elige maniobras adicionales.', choiceKey: 'maneuvers', actionType: 'passive' },
         { id: 'bm-15', name: 'Relentless', description: 'Si te quedan 0 dados de superioridad al iniciar un turno, recuperas 1.', level: 15, source: 'subclass', actionType: 'passive' },
       ],
     },
@@ -211,7 +211,7 @@ export const SUBCLASSES_2024: Record<string, SubclassDef[]> = {
       features: [
         { id: 'ch-3', name: 'Crítico mejorado', description: 'Crítico con arma en 19–20.', level: 3, source: 'subclass', actionType: 'passive' },
         { id: 'ch-7', name: 'Atleta excepcional', description: 'Corres, saltas y trepas mejor; iniciativa con ventaja ocasional.', level: 7, source: 'subclass', actionType: 'passive' },
-        { id: 'ch-10', name: 'Combatiente adicional', description: 'Mejora de estilo de combate o segundo estilo.', level: 10, source: 'subclass', requiresChoice: true, choiceHint: 'Elige estilo de combate adicional o mejora.', actionType: 'passive' },
+        { id: 'ch-10', name: 'Combatiente adicional', description: 'Mejora de estilo de combate o segundo estilo.', level: 10, source: 'subclass', requiresChoice: true, choiceHint: 'Elige estilo de combate adicional.', choiceKey: 'fighting-style', actionType: 'passive' },
         { id: 'ch-15', name: 'Crítico superior', description: 'Crítico en 18–20.', level: 15, source: 'subclass', actionType: 'passive' },
       ],
     },

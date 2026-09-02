@@ -28,7 +28,7 @@ import {
   AlertCircle,
   X,
 } from 'lucide-react';
-import { ManageLevelsModal } from './ManageLevelsModal';
+import { LevelUpModal } from './LevelUpModal';
 import { SubclassPanel } from './SubclassPanel';
 import { SorceryPointsPanel } from './SorceryPointsPanel';
 import { FeatureTablesPanel } from './FeatureTablesPanel';
@@ -41,12 +41,12 @@ import { ActionsPanel } from './ActionsPanel';
 import { CollapsibleSection } from '../ui/CollapsibleSection';
 import { computeArmorClass } from '../../utils/armorClass';
 import { syncFeatureUsesFromCatalog, syncSpellsFromCatalog } from '../../utils/syncCharacterCatalog';
-import { rebuildFeaturesForLevel } from '../../utils/characterBuilder';
 import { applyFeatureSpellGrants } from '../../utils/featureSpellGrants';
 import { getEquippedPenalties } from '../../utils/equipmentEffects';
 import { useClasses } from '../../hooks/useClasses';
 import { useRaces } from '../../hooks/useRaces';
 import { useSpells } from '../../hooks/useSpells';
+import { useBackgrounds } from '../../hooks/useBackgrounds';
 
 interface Props {
   character: Character;
@@ -57,7 +57,7 @@ interface Props {
 
 export function CharacterSheet({ character: initial, onSave, onBack, onExport }: Props) {
   const [character, setCharacter] = useState<Character>(initial);
-  const [activeTab, setActiveTab] = useState<'main' | 'actions' | 'spells' | 'inventory' | 'features' | 'notes'>('main');
+  const [activeTab, setActiveTab] = useState<'main' | 'combat' | 'inventory' | 'features' | 'subclass' | 'notes'>('main');
   const [dirty, setDirty] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showPendingChoices, setShowPendingChoices] = useState(false);
@@ -65,36 +65,23 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
   const { classes } = useClasses();
   const { races } = useRaces();
   const { spells: spellCatalog } = useSpells();
+  const { backgrounds } = useBackgrounds();
 
-  // Sincronizar catálogo + rasgos solo hasta el nivel actual (PHB gating)
+  // Usos de rasgos (Oleada de acción, etc.) + conjuros de raza/clase homebrew
   useEffect(() => {
     const classData =
       classes.find((c) => c.id === character.classId || c.name === character.class) || null;
     const raceData =
       races.find((r) => r.id === character.raceId || r.name === character.race) || null;
-    let next = { ...character };
-    // Rebuild class/race/subclass features for current level when catalog or level changes
-    if (classData || raceData) {
-      const rebuilt = rebuildFeaturesForLevel(next, classData || undefined, raceData || undefined, next.level);
-      // Keep feat/background/homebrew that rebuild preserves; merge descriptions from catalog
-      next = { ...next, features: rebuilt };
-    }
-    next = syncFeatureUsesFromCatalog(next, classData, raceData);
+    let next = syncFeatureUsesFromCatalog(character, classData, raceData);
     next = syncSpellsFromCatalog(next, classData, raceData, spellCatalog);
     next = applyFeatureSpellGrants(next, spellCatalog);
-    // Avoid infinite loop: only update if meaningful change
-    const same =
-      next.features.length === character.features.length &&
-      next.features.every((f, i) => f.id === character.features[i]?.id && f.uses?.max === character.features[i]?.uses?.max) &&
-      JSON.stringify(next.spellSlots) === JSON.stringify(character.spellSlots) &&
-      JSON.stringify(next.spells) === JSON.stringify(character.spells) &&
-      JSON.stringify(next.cantripsKnown) === JSON.stringify(character.cantripsKnown);
-    if (!same) {
+    if (next !== character) {
       setCharacter(next);
       setDirty(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classes, races, spellCatalog, character.classId, character.raceId, character.level, character.class, character.race, character.subclassId]);
+  }, [classes, races, spellCatalog, character.classId, character.raceId, character.level, character.class, character.race]);
 
 
   // CA automática según armadura/escudo en mano (equipado)
@@ -192,23 +179,14 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
 
   return (
     <div className="max-w-6xl mx-auto w-full">
-      {/* Header estilo D&D Beyond */}
+      {/* Header */}
       <div className="bg-ink-900 text-parchment-50 rounded-t-xl p-3 sm:p-4 flex flex-wrap items-center gap-2 sm:gap-4">
         <button
           onClick={onBack}
           className="p-2 hover:bg-ink-700 rounded-lg transition-colors"
-          title="Volver"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-
-        {/* Portrait placeholder */}
-        <div
-          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-ink-700 border-2 border-crimson-500 flex items-center justify-center text-xl sm:text-2xl font-display font-bold shrink-0 shadow-lg"
-          title="Retrato"
-        >
-          {(character.name || '?').charAt(0).toUpperCase()}
-        </div>
 
         <div className="flex-1 min-w-0">
           <input
@@ -218,18 +196,68 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
             className="text-xl sm:text-2xl font-display font-bold bg-transparent border-b border-transparent hover:border-parchment-400 focus:border-parchment-300 focus:outline-none w-full"
           />
           <div className="flex flex-wrap gap-2 mt-1 text-sm text-parchment-300">
-            <span title="Especie (fija tras la creación)">{character.race}</span>
+            <input
+              value={character.race}
+              onChange={(e) => update({ race: e.target.value })}
+              placeholder="Raza"
+              className="bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none w-24"
+            />
             <span>•</span>
-            <span title="Clase (fija tras la creación)">{character.class}</span>
+            <input
+              value={character.class}
+              onChange={(e) => update({ class: e.target.value })}
+              placeholder="Clase"
+              className="bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none w-28"
+            />
             {character.subclass && (
-              <span className="text-parchment-400">({character.subclass})</span>
+              <>
+                <span>({character.subclass})</span>
+              </>
             )}
             <span>•</span>
-            <span title="Usa «Gestionar niveles» para cambiar">
-              Nivel <strong className="text-parchment-50">{character.level}</strong>
-            </span>
+            <span>Nivel</span>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={character.level}
+              onChange={(e) =>
+                update({
+                  level: Math.min(20, Math.max(1, parseInt(e.target.value) || 1)),
+                  proficiencyBonus: Math.ceil((parseInt(e.target.value) || 1) / 4) + 1,
+                })
+              }
+              className="w-12 bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none text-center"
+            />
             <span>•</span>
-            <span title="Trasfondo (fijo tras creación)">{character.background || '—'}</span>
+            <select
+              value={
+                backgrounds.some((b) => b.name === character.background || b.id === character.backgroundId)
+                  ? (backgrounds.find((b) => b.name === character.background || b.id === character.backgroundId)?.name || character.background)
+                  : character.background || ''
+              }
+              onChange={(e) => {
+                const name = e.target.value;
+                const bg = backgrounds.find((b) => b.name === name);
+                update({
+                  background: name,
+                  backgroundId: bg?.id,
+                });
+              }}
+              className="bg-ink-900/40 border border-parchment-600/40 rounded px-1 py-0.5 text-sm max-w-[9rem]"
+              title="Trasfondo (catálogo + homebrew)"
+            >
+              <option value="">Trasfondo…</option>
+              {backgrounds.map((b) => (
+                <option key={b.id} value={b.name}>
+                  {b.name}{b.homebrew ? ' (HB)' : ''}
+                </option>
+              ))}
+              {character.background &&
+                !backgrounds.some((b) => b.name === character.background) && (
+                  <option value={character.background}>{character.background} (custom)</option>
+                )}
+            </select>
             {character.alignment && (
               <>
                 <span>•</span>
@@ -268,9 +296,8 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
           <button
             onClick={() => setShowLevelUp(true)}
             className="flex items-center gap-1 px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-sm font-medium"
-            title="Subir o bajar de nivel, elegir subclase y ASI"
           >
-            <TrendingUp className="w-4 h-4" /> Gestionar niveles
+            <TrendingUp className="w-4 h-4" /> Subir nivel
           </button>
             <button
               type="button"
@@ -365,16 +392,9 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
         </button>
       </div>
 
-      {/* Tabs estilo D&D Beyond */}
+      {/* Tabs */}
       <div className="bg-parchment-100 border-x-2 border-ink-800 flex overflow-x-auto scroll-touch sticky top-[3.25rem] sm:top-0 z-20 sm:static">
-        {([
-          ['main', 'Resumen'],
-          ['actions', 'Acciones'],
-          ['spells', 'Conjuros'],
-          ['inventory', 'Inventario'],
-          ['features', 'Rasgos'],
-          ['notes', 'Notas'],
-        ] as const).map(([tab, label]) => (
+        {(['main', 'combat', 'inventory', 'features', 'subclass', 'notes'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -384,7 +404,12 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
                 : 'border-transparent text-ink-600 hover:text-ink-900'
             }`}
           >
-            {label}
+            {tab === 'main' && 'Principal'}
+            {tab === 'combat' && 'Combate'}
+            {tab === 'inventory' && 'Inventario'}
+            {tab === 'features' && 'Rasgos'}
+            {tab === 'subclass' && 'Subclase'}
+            {tab === 'notes' && 'Notas'}
           </button>
         ))}
       </div>
@@ -627,10 +652,10 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
           </>
         )}
 
-        {activeTab === 'actions' && (
+        {activeTab === 'combat' && (
           <div className="space-y-3">
             <CollapsibleSection
-              title="Descansos y usos limitados"
+              title="Rasgos y descansos"
               defaultOpen
               headerClassName="bg-amber-50 border-amber-400"
             >
@@ -638,6 +663,17 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
                 character={character}
                 onUpdate={(partial) => update(partial)}
                 sections={['rest', 'features']}
+              />
+            </CollapsibleSection>
+            <CollapsibleSection
+              title="Espacios, hechicería y conjuros"
+              defaultOpen
+              headerClassName="bg-purple-50 border-purple-400"
+            >
+              <CombatPanel
+                character={character}
+                onUpdate={(partial) => update(partial)}
+                sections={['slots', 'spells']}
               />
             </CollapsibleSection>
             <CollapsibleSection
@@ -665,24 +701,6 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
           </div>
         )}
 
-        {activeTab === 'spells' && (
-          <div className="space-y-3">
-            <CollapsibleSection
-              title="Espacios de conjuro y hechicería"
-              defaultOpen
-              headerClassName="bg-purple-50 border-purple-400"
-            >
-              <CombatPanel
-                character={character}
-                onUpdate={(partial) => update(partial)}
-                sections={['slots', 'spells']}
-              />
-            </CollapsibleSection>
-            <SorceryPointsPanel character={character} onUpdate={(partial) => update(partial)} />
-            <FeatureTablesPanel character={character} onUpdate={(partial) => update(partial)} />
-          </div>
-        )}
-
         {activeTab === 'inventory' && (
           <InventoryPanel
             character={character}
@@ -691,12 +709,17 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
         )}
 
         {activeTab === 'features' && (
+          <FeaturesPanel
+            character={character}
+            onUpdate={(features) => update({ features })}
+          />
+        )}
+
+        {activeTab === 'subclass' && (
           <div className="space-y-4">
-            <FeaturesPanel
-              character={character}
-              onUpdate={(features) => update({ features })}
-            />
             <SubclassPanel character={character} onUpdate={(partial) => update(partial)} />
+            <SorceryPointsPanel character={character} onUpdate={(partial) => update(partial)} />
+            <FeatureTablesPanel character={character} onUpdate={(partial) => update(partial)} />
           </div>
         )}
 
@@ -858,7 +881,7 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
       )}
 
       {showLevelUp && (
-        <ManageLevelsModal
+        <LevelUpModal
           character={character}
           onClose={() => setShowLevelUp(false)}
           onConfirm={(updated) => {

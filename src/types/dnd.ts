@@ -85,7 +85,7 @@ export interface CharacterFeature {
   name: string;
   description: string;
   source?: string; // class, race, feat, background, homebrew
-  /** Level at which this feature is gained (for filtering when managing levels) */
+  /** Level at which this feature was gained (for filtering / display) */
   level?: number;
   /** Limited-use resource (Second Wind, Rage, Channel Divinity…) */
   uses?: FeatureUses;
@@ -319,6 +319,8 @@ export interface FeatureEntry {
   /** If true, level-up should prompt the player to choose something for this feature */
   requiresChoice?: boolean;
   choiceHint?: string;
+  /** Key to a structured choice catalog (fighting-style, metamagic, maneuvers, invocation, pact-boon, etc.) */
+  choiceKey?: string;
 }
 
 export interface RaceData {

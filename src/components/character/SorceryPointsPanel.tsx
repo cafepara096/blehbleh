@@ -9,11 +9,12 @@ interface Props {
 
 export function SorceryPointsPanel({ character, onUpdate, }: Props) {
   const [open, setOpen] = useState(false);
+  const classId = (character.classId || '').toLowerCase();
+  const className = (character.class || '').toLowerCase();
   const isSorcerer =
-    character.classId === 'sorcerer' ||
-    character.class.toLowerCase().includes('hechic') ||
-    character.class.toLowerCase().includes('sorcer') ||
-    !!character.sorceryPoints;
+    classId === 'sorcerer' ||
+    className.includes('hechic') ||
+    className.includes('sorcerer');
 
   if (!isSorcerer) return null;
 

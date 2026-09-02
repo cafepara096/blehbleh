@@ -36,18 +36,24 @@ export function FeatureTablesPanel({ character, onUpdate }: Props) {
     setManCatalog(loadTable(STORAGE_MANEUVERS, BATTLE_MASTER_MANEUVERS));
   }, []);
 
+  // Solo por clase/subclase real — no por sorceryPoints sueltos (evita mostrar tablas a todas las clases)
+  const classId = (character.classId || '').toLowerCase();
+  const className = (character.class || '').toLowerCase();
+  const subId = (character.subclassId || '').toLowerCase();
+  const subName = (character.subclass || '').toLowerCase();
+
   const isSorcerer =
-    character.classId === 'sorcerer' ||
-    character.class.toLowerCase().includes('hechic') ||
-    !!character.sorceryPoints;
+    classId === 'sorcerer' ||
+    className.includes('hechic') ||
+    className.includes('sorcerer');
   const isBattleMaster =
-    character.subclassId === 'battle-master' ||
-    (character.subclass || '').toLowerCase().includes('maestro de batalla') ||
-    (character.subclass || '').toLowerCase().includes('battle master');
+    subId === 'battle-master' ||
+    subName.includes('maestro de batalla') ||
+    subName.includes('battle master');
   const isWildMagic =
-    character.subclassId === 'wild-magic' ||
-    (character.subclass || '').toLowerCase().includes('magia salvaje') ||
-    (character.subclass || '').toLowerCase().includes('wild magic');
+    subId === 'wild-magic' ||
+    subName.includes('magia salvaje') ||
+    subName.includes('wild magic');
 
   const knownMeta = character.metamagicKnown || [];
   const knownMan = character.maneuversKnown || [];

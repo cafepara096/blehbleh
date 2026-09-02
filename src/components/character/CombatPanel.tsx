@@ -251,18 +251,45 @@ export function CombatPanel({ character, onUpdate, sections }: Props) {
         )}
       </CollapsibleSection>}
 
-      {(show('slots')) && onUpdate && (
-        <CollapsibleSection
-          title="Hechicería / tablas de subclase"
-          defaultOpen
-          headerClassName="bg-fuchsia-50 border-fuchsia-400"
-        >
-          <div className="space-y-1.5">
-            <SorceryPointsPanel character={character} onUpdate={onUpdate} />
-            <FeatureTablesPanel character={character} onUpdate={onUpdate} />
-          </div>
-        </CollapsibleSection>
-      )}
+      {(show('slots')) && onUpdate && (() => {
+        const classId = (character.classId || '').toLowerCase();
+        const className = (character.class || '').toLowerCase();
+        const subId = (character.subclassId || '').toLowerCase();
+        const subName = (character.subclass || '').toLowerCase();
+        const showSorcery =
+          classId === 'sorcerer' ||
+          className.includes('hechic') ||
+          className.includes('sorcerer');
+        const showTables =
+          showSorcery ||
+          subId === 'battle-master' ||
+          subName.includes('maestro de batalla') ||
+          subName.includes('battle master') ||
+          subId === 'wild-magic' ||
+          subName.includes('magia salvaje') ||
+          subName.includes('wild magic');
+        if (!showSorcery && !showTables) return null;
+        return (
+          <CollapsibleSection
+            title={
+              showSorcery
+                ? 'Hechicería y metamagia'
+                : subId === 'battle-master' || subName.includes('maestro de batalla')
+                ? 'Maniobras (Maestro de batalla)'
+                : 'Oleada de magia salvaje'
+            }
+            defaultOpen
+            headerClassName="bg-fuchsia-50 border-fuchsia-400"
+          >
+            <div className="space-y-1.5">
+              {showSorcery && (
+                <SorceryPointsPanel character={character} onUpdate={onUpdate} />
+              )}
+              <FeatureTablesPanel character={character} onUpdate={onUpdate} />
+            </div>
+          </CollapsibleSection>
+        );
+      })()}
 
       {/* Cantrips + leveled spells */}
       {show('spells') && (

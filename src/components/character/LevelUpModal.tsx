@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { AbilityScore, AbilityScores, Character, PendingChoice } from '../../types/dnd';
+import type { AbilityScore, AbilityScores, Character, PendingChoice, FeatureEntry } from '../../types/dnd';
 import { ABILITY_LABELS } from '../../types/dnd';
 import { useClasses } from '../../hooks/useClasses';
 import {
@@ -10,6 +10,11 @@ import {
   toCharacterFeatures,
 } from '../../utils/characterBuilder';
 import { getModifier, formatModifier } from '../../utils/character';
+import {
+  getChoiceCatalog,
+  CHOICE_CATALOG_LABELS,
+  type TableOption,
+} from '../../data/featureTables';
 import { X, TrendingUp } from 'lucide-react';
 
 interface Props {
@@ -37,6 +42,8 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
   const [subclassId, setSubclassId] = useState(character.subclassId || '');
   const [choiceNotes, setChoiceNotes] = useState<Record<string, string>>({});
   const [acknowledgedChoices, setAcknowledgedChoices] = useState<Record<string, boolean>>({});
+  /** Selecciones múltiples desde catálogo (metamagia, maniobras, invocaciones…) */
+  const [catalogPicks, setCatalogPicks] = useState<Record<string, string[]>>({});
 
   const needsAsi = isAsiLevel(newLevel);
   const subclassOptions = classData?.subclasses?.length
@@ -51,10 +58,40 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
     subclassOptions.length > 0 &&
     newLevel >= subclassLevel;
 
+  const existingFeatureIds = useMemo(
+    () => new Set(character.features.map((f) => f.id)),
+    [character.features]
+  );
+
   const featuresAtLevel = useMemo(() => {
     if (!classData) return [];
-    return classData.features.filter((f) => f.level === newLevel);
-  }, [classData, newLevel]);
+    // Solo rasgos de este nivel que aún no tiene el personaje (evita duplicados)
+    return classData.features.filter(
+      (f) => f.level === newLevel && !existingFeatureIds.has(f.id)
+    );
+  }, [classData, newLevel, existingFeatureIds]);
+
+  const inferChoiceKey = (f: FeatureEntry): string | undefined => {
+    if (f.choiceKey) return f.choiceKey;
+    const n = (f.name || '').toLowerCase();
+    if (/estilo de combate|fighting style/.test(n)) return 'fighting-style';
+    if (/metamagia|metamagic/.test(n)) return 'metamagic';
+    if (/maniobra|maneuver/.test(n)) return 'maneuvers';
+    if (/invocaci[oó]n/.test(n)) return 'invocation';
+    if (/bendici[oó]n de pacto|pact boon|pacto de la/.test(n)) return 'pact-boon';
+    return undefined;
+  };
+
+  const toggleCatalogPick = (featureId: string, optionId: string, multi: boolean) => {
+    setCatalogPicks((prev) => {
+      const cur = prev[featureId] || [];
+      if (!multi) return { ...prev, [featureId]: [optionId] };
+      const set = new Set(cur);
+      if (set.has(optionId)) set.delete(optionId);
+      else set.add(optionId);
+      return { ...prev, [featureId]: Array.from(set) };
+    });
+  };
 
   const hpGain =
     Math.max(1, (hpMode === 'avg' ? avgHp : rolledHp) + conMod);
@@ -120,12 +157,34 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
 
     // Resolve / defer choices (class + subclass features that require selection)
     const choiceSources = [...featuresAtLevel, ...subclassFeaturesAtLevel];
-    const pending: PendingChoice[] = [...(character.pendingChoices || [])];
+    const pending: PendingChoice[] = [...(character.pendingChoices || [])].filter(
+      (p) => !choiceSources.some((f) => f.id === p.featureId && existingFeatureIds.has(f.id))
+    );
     const notes: string[] = [];
 
     for (const f of choiceSources) {
-      if (!f.requiresChoice) continue;
-      const answer = choiceNotes[f.id]?.trim();
+      const cKey = inferChoiceKey(f);
+      const picks = catalogPicks[f.id] || [];
+      const answerFromCatalog =
+        cKey && picks.length
+          ? picks
+              .map((id) => getChoiceCatalog(cKey).find((o) => o.id === id)?.name || id)
+              .join(', ')
+          : '';
+      const answer = answerFromCatalog || choiceNotes[f.id]?.trim();
+
+      // Metamagia / maniobras conocidas en la hoja
+      if (cKey === 'metamagic' && picks.length) {
+        const known = new Set([...(character.metamagicKnown || []), ...picks]);
+        updated = { ...updated, metamagicKnown: Array.from(known) };
+      }
+      if (cKey === 'maneuvers' && picks.length) {
+        const known = new Set([...(character.maneuversKnown || []), ...picks]);
+        updated = { ...updated, maneuversKnown: Array.from(known) };
+      }
+
+      if (!f.requiresChoice && !cKey) continue;
+
       if (answer) {
         notes.push(`${f.name}: ${answer}`);
         updated = {
@@ -136,15 +195,14 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
               : feat
           ),
         };
-      } else {
-        // Keep as pending unless explicitly acknowledged without text — still pending
+      } else if (f.requiresChoice || cKey) {
         if (!pending.some((p) => p.featureId === f.id && !p.resolution)) {
           pending.push({
             id: crypto.randomUUID(),
             featureId: f.id,
             featureName: f.name,
             description: f.description,
-            choiceHint: f.choiceHint,
+            choiceHint: f.choiceHint || (cKey ? `Elige de: ${CHOICE_CATALOG_LABELS[cKey] || cKey}` : undefined),
             levelGained: newLevel,
             source: f.source || 'class',
           });
@@ -264,7 +322,33 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
                     <li key={f.id} className="bg-white border border-purple-100 rounded p-2 text-sm">
                       <strong>{f.name}</strong>
                       <p className="text-xs text-ink-600 mt-0.5">{f.description}</p>
-                      {f.requiresChoice && (
+                      {(() => {
+                        const cKey = inferChoiceKey(f);
+                        const catalog = cKey ? getChoiceCatalog(cKey) : [];
+                        if (!f.requiresChoice && !cKey) return null;
+                        const multi = cKey === 'metamagic' || cKey === 'maneuvers' || cKey === 'invocation';
+                        if (catalog.length) {
+                          return (
+                            <div className="mt-1 max-h-36 overflow-y-auto space-y-0.5 border border-purple-200 rounded bg-white p-1.5">
+                              {catalog.map((opt) => {
+                                const selected = (catalogPicks[f.id] || []).includes(opt.id);
+                                return (
+                                  <label key={opt.id} className={`flex gap-2 text-[11px] cursor-pointer rounded px-1 ${selected ? 'bg-purple-100' : ''}`}>
+                                    <input
+                                      type={multi ? 'checkbox' : 'radio'}
+                                      name={`sub-choice-${f.id}`}
+                                      checked={selected}
+                                      onChange={() => toggleCatalogPick(f.id, opt.id, multi)}
+                                      className="mt-0.5"
+                                    />
+                                    <span><strong>{opt.name}</strong> — {opt.description}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          );
+                        }
+                        return (
                         <input
                           placeholder={f.choiceHint || 'Anota tu elección…'}
                           value={choiceNotes[f.id] || ''}
@@ -273,7 +357,8 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
                           }
                           className="mt-1 w-full px-2 py-1 border border-amber-300 rounded text-xs bg-amber-50"
                         />
-                      )}
+                        );
+                      })()}
                     </li>
                   ))}
                 </ul>
@@ -297,14 +382,52 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
                       )}
                     </div>
                     <p className="text-ink-600 text-xs mt-1">{f.description}</p>
-                    {f.requiresChoice && (
+                    {(() => {
+                      const cKey = inferChoiceKey(f);
+                      const catalog = cKey ? getChoiceCatalog(cKey) : [];
+                      if (!f.requiresChoice && !cKey) return null;
+                      const multi = cKey === 'metamagic' || cKey === 'maneuvers' || cKey === 'invocation';
+                      return (
                       <div className="mt-2 bg-amber-50 border border-amber-300 rounded p-2 space-y-1">
                         <p className="text-xs font-bold text-amber-900">
                           ⚠ Debes elegir algo
                         </p>
                         <p className="text-xs text-amber-800">
-                          {f.choiceHint || 'Consulta el manual / homebrew y anota tu elección.'}
+                          {f.choiceHint ||
+                            (cKey
+                              ? `Elige de la lista de ${CHOICE_CATALOG_LABELS[cKey] || cKey}.`
+                              : 'Consulta el manual / homebrew y anota tu elección.')}
                         </p>
+                        {catalog.length > 0 ? (
+                          <div className="max-h-40 overflow-y-auto space-y-1 border border-amber-200 rounded bg-white/80 p-1.5">
+                            {catalog.map((opt: TableOption) => {
+                              const selected = (catalogPicks[f.id] || []).includes(opt.id);
+                              return (
+                                <label
+                                  key={opt.id}
+                                  className={`flex gap-2 items-start text-[11px] cursor-pointer rounded px-1 py-0.5 ${
+                                    selected ? 'bg-amber-100' : 'hover:bg-amber-50'
+                                  }`}
+                                >
+                                  <input
+                                    type={multi ? 'checkbox' : 'radio'}
+                                    name={`choice-${f.id}`}
+                                    checked={selected}
+                                    onChange={() => toggleCatalogPick(f.id, opt.id, multi)}
+                                    className="mt-0.5"
+                                  />
+                                  <span>
+                                    <strong>{opt.name}</strong>
+                                    {opt.cost != null && (
+                                      <span className="text-violet-800"> ({opt.cost} SP)</span>
+                                    )}
+                                    <span className="block text-ink-600">{opt.description}</span>
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        ) : (
                         <input
                           placeholder="Anota aquí tu elección…"
                           value={choiceNotes[f.id] || ''}
@@ -313,6 +436,7 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
                           }
                           className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
                         />
+                        )}
                         <label className="flex items-center gap-2 text-xs">
                           <input
                             type="checkbox"
@@ -327,7 +451,8 @@ export function LevelUpModal({ character, onConfirm, onClose }: Props) {
                           Ya elegí / lo haré en la hoja
                         </label>
                       </div>
-                    )}
+                      );
+                    })()}
                   </li>
                 ))}
               </ul>
