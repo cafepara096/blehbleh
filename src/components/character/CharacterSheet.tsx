@@ -28,7 +28,7 @@ import {
   AlertCircle,
   X,
 } from 'lucide-react';
-import { LevelUpModal } from './LevelUpModal';
+import { ManageLevelsModal } from './ManageLevelsModal';
 import { SubclassPanel } from './SubclassPanel';
 import { SorceryPointsPanel } from './SorceryPointsPanel';
 import { FeatureTablesPanel } from './FeatureTablesPanel';
@@ -297,7 +297,7 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
             onClick={() => setShowLevelUp(true)}
             className="flex items-center gap-1 px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-sm font-medium"
           >
-            <TrendingUp className="w-4 h-4" /> Subir nivel
+            <TrendingUp className="w-4 h-4" /> Gestionar niveles
           </button>
             <button
               type="button"
@@ -881,7 +881,7 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
       )}
 
       {showLevelUp && (
-        <LevelUpModal
+        <ManageLevelsModal
           character={character}
           onClose={() => setShowLevelUp(false)}
           onConfirm={(updated) => {

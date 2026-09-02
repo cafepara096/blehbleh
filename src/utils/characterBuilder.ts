@@ -554,6 +554,246 @@ export function applyLevelUp(
   };
 }
 
+/**
+ * Reconstruye rasgos de clase/raza/subclase según el nivel objetivo.
+ * Conserva rasgos homebrew y notas de elección en rasgos que se mantienen.
+ */
+export function rebuildFeaturesForLevel(
+  character: Character,
+  classData: ClassData | undefined,
+  raceData: { traits?: FeatureEntry[] } | undefined,
+  targetLevel: number
+): CharacterFeature[] {
+  const level = Math.max(1, Math.min(20, targetLevel));
+  const keptHomebrew = character.features.filter(
+    (f) =>
+      f.source === 'homebrew' ||
+      f.source === 'feat' ||
+      f.source === 'background' ||
+      f.source === 'homebrew-subclass'
+  );
+
+  const classFeats = classData
+    ? toCharacterFeatures(
+        classData.features.filter((f) => f.level <= level),
+        'class',
+        level
+      )
+    : character.features.filter((f) => f.source === 'class' && (f.level == null || f.level <= level));
+
+  const raceFeats =
+    raceData?.traits
+      ? toCharacterFeatures(
+          raceData.traits.filter((t) => (t.level || 1) <= level),
+          'race',
+          level
+        )
+      : character.features.filter((f) => f.source === 'race');
+
+  let subclassFeats: CharacterFeature[] = [];
+  if (character.subclassId && classData) {
+    const subList =
+      classData.subclasses ||
+      SUBCLASSES_2024[classData.id] ||
+      SUBCLASSES_2024[character.classId] ||
+      [];
+    const sub = subList.find(
+      (s) => s.id === character.subclassId || s.name === character.subclass
+    );
+    if (sub) {
+      subclassFeats = toCharacterFeatures(
+        sub.features.filter((f) => f.level <= level),
+        'subclass',
+        level
+      );
+    }
+  }
+
+  // Fusionar: preferir descripción del personaje si ya tenía el mismo id (elecciones anotadas)
+  const prevById = new Map(character.features.map((f) => [f.id, f]));
+  const merge = (list: CharacterFeature[]): CharacterFeature[] =>
+    list.map((f) => {
+      const prev = prevById.get(f.id);
+      if (!prev) return f;
+      // conservar descripción ampliada (elección) y usos actuales acotados al nuevo max
+      const uses =
+        f.uses && prev.uses
+          ? {
+              ...f.uses,
+              current: Math.min(prev.uses.current, f.uses.max),
+            }
+          : f.uses;
+      return {
+        ...f,
+        description: prev.description.length > f.description.length ? prev.description : f.description,
+        uses,
+      };
+    });
+
+  const byId = new Map<string, CharacterFeature>();
+  for (const f of [
+    ...merge(raceFeats),
+    ...merge(classFeats),
+    ...merge(subclassFeats),
+    ...keptHomebrew,
+  ]) {
+    byId.set(f.id, f);
+  }
+  return Array.from(byId.values());
+}
+
+/**
+ * Cambia el nivel del personaje (subir o bajar), recalculando PG, competencia,
+ * espacios de conjuro, SP y rasgos según catálogo.
+ */
+export function setCharacterLevel(
+  character: Character,
+  classData: ClassData | undefined,
+  targetLevel: number,
+  opts?: {
+    /** Solo al subir: PG ganados por cada nivel nuevo (suma total) */
+    hpDelta?: number;
+    raceData?: { traits?: FeatureEntry[] };
+    /** ASI aplicados al subir (solo si el usuario los eligió en el modal) */
+    asi?: Partial<AbilityScores>;
+    subclassId?: string;
+    subclassName?: string;
+  }
+): Character {
+  const newLevel = Math.max(1, Math.min(20, targetLevel));
+  const oldLevel = character.level;
+  if (newLevel === oldLevel && !opts?.subclassId) {
+    return character;
+  }
+
+  const scores = { ...character.abilityScores };
+  if (opts?.asi && newLevel > oldLevel) {
+    (Object.keys(opts.asi) as AbilityScore[]).forEach((k) => {
+      scores[k] = Math.min(20, scores[k] + (opts.asi![k] || 0));
+    });
+  }
+
+  let subclassId = character.subclassId;
+  let subclass = character.subclass;
+  if (opts?.subclassId) {
+    subclassId = opts.subclassId;
+    subclass = opts.subclassName || character.subclass;
+  }
+  // Al bajar por debajo del nivel de subclase, quitar subclase
+  const subclassGate =
+    classData?.features.find((f) =>
+      /subclase|arquetipo|camino|colegio|dominio|juramento|c[ií]rculo|tradici[oó]n|origen|patr[oó]n/i.test(
+        f.name
+      )
+    )?.level || 3;
+  if (newLevel < subclassGate) {
+    subclassId = undefined;
+    subclass = undefined;
+  }
+
+  const withSub = {
+    ...character,
+    subclassId,
+    subclass,
+    abilityScores: scores,
+  };
+
+  const features = rebuildFeaturesForLevel(
+    withSub,
+    classData,
+    opts?.raceData,
+    newLevel
+  );
+  const refreshed = refreshFeatureUses(features, classData, newLevel);
+
+  const hitDie = classData?.hitDie || character.hitDice.replace(/^\d+/, '') || 'd8';
+  const dieNum = hitDieNumber(hitDie.startsWith('d') ? hitDie : `d${hitDie}`);
+
+  // PG: si sube, sumar hpDelta; si baja, estimar resta por promedio
+  let hitPointMax = character.hitPointMax;
+  let hitPointCurrent = character.hitPointCurrent;
+  if (newLevel > oldLevel) {
+    const gain = opts?.hpDelta ?? 0;
+    hitPointMax = character.hitPointMax + gain;
+    hitPointCurrent = character.hitPointCurrent + gain;
+  } else if (newLevel < oldLevel) {
+    const conMod = getModifier(character.abilityScores.con);
+    const avgPerLevel = Math.floor(dieNum / 2) + 1 + conMod;
+    const levelsDown = oldLevel - newLevel;
+    const loss = Math.max(0, levelsDown * Math.max(1, avgPerLevel));
+    hitPointMax = Math.max(1, character.hitPointMax - loss);
+    hitPointCurrent = Math.min(hitPointMax, character.hitPointCurrent);
+  }
+
+  // Spell slots
+  let spellSlots = { ...character.spellSlots };
+  const kind =
+    classData?.spellcasting?.type ||
+    getCasterKindFromClassId(classData?.id || character.classId) ||
+    (character.spellcastingAbility ? 'full' : 'none');
+
+  if (kind === 'full' || kind === 'half' || kind === 'third') {
+    let casterLevel = newLevel;
+    if (kind === 'half') casterLevel = newLevel < 2 ? 0 : Math.floor(newLevel / 2);
+    if (kind === 'third') casterLevel = newLevel < 3 ? 0 : Math.floor(newLevel / 3);
+    if (casterLevel > 0) {
+      const table = getFullCasterSlots(casterLevel);
+      const next: Record<number, { max: number; used: number }> = {};
+      for (const [lvlStr, max] of Object.entries(table)) {
+        const lvl = Number(lvlStr);
+        const prev = spellSlots[lvl];
+        next[lvl] = { max, used: prev ? Math.min(prev.used, max) : 0 };
+      }
+      spellSlots = next;
+    } else {
+      spellSlots = {};
+    }
+  } else if (kind === 'pact') {
+    const pact = getPactSlots(newLevel);
+    const prevUsed = Object.values(spellSlots).reduce((s, v) => s + (v?.used || 0), 0);
+    spellSlots = {
+      [pact.level]: { max: pact.count, used: Math.min(prevUsed, pact.count) },
+    };
+  }
+
+  let sorceryPoints = character.sorceryPoints;
+  const isSorcerer =
+    classData?.id === 'sorcerer' ||
+    character.classId === 'sorcerer' ||
+    (character.class || '').toLowerCase().includes('hechic');
+  if (isSorcerer) {
+    const spMax = getSorceryPointsMax(newLevel);
+    sorceryPoints = {
+      max: spMax,
+      current: Math.min(spMax, character.sorceryPoints?.current ?? spMax),
+    };
+  } else {
+    sorceryPoints = undefined;
+  }
+
+  // Limpiar elecciones pendientes de niveles superiores
+  const pendingChoices = (character.pendingChoices || []).filter(
+    (p) => (p.levelGained || 1) <= newLevel
+  );
+
+  return {
+    ...character,
+    level: newLevel,
+    proficiencyBonus: getProficiencyBonus(newLevel),
+    abilityScores: scores,
+    hitPointMax,
+    hitPointCurrent,
+    hitDice: `${newLevel}d${dieNum}`,
+    features: refreshed,
+    spellSlots,
+    sorceryPoints,
+    subclassId,
+    subclass,
+    pendingChoices,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 /** Simple subclasses by class id for SRD-ish choices */
 /** Subclases PHB 2024 (nombres ES + resumen; desbloqueo típico nivel 3 salvo indicación) */
 

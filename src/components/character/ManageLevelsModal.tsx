@@ -1,31 +1,31 @@
 import { useMemo, useState } from 'react';
-import type { AbilityScore, AbilityScores, Character, PendingChoice } from '../../types/dnd';
+import type { AbilityScore, AbilityScores, Character, CharacterFeature } from '../../types/dnd';
 import { ABILITY_LABELS } from '../../types/dnd';
 import { useClasses } from '../../hooks/useClasses';
 import { useRaces } from '../../hooks/useRaces';
 import {
-  SUBCLASSES,
-  isAsiLevel,
-  hitDieNumber,
   setCharacterLevel,
+  hitDieNumber,
+  isAsiLevel,
+  SUBCLASSES,
+  toCharacterFeatures,
 } from '../../utils/characterBuilder';
 import { getModifier, formatModifier } from '../../utils/character';
+import {
+  getChoiceCatalog,
+  CHOICE_CATALOG_LABELS,
+  type TableOption,
+} from '../../data/featureTables';
 import { X, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface Props {
   character: Character;
-  onConfirm: (character: Character) => void;
+  onConfirm: (updated: Character) => void;
   onClose: () => void;
 }
 
 const ABILITIES: AbilityScore[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
-/**
- * Gestionar niveles (estilo D&D Beyond):
- * - Elegir nivel objetivo (subir o bajar)
- * - ASI / subclase / rasgos que requieran elección al subir
- * - Al bajar, se retiran rasgos de niveles superiores
- */
 export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
   const { classes } = useClasses();
   const { races } = useRaces();
@@ -37,18 +37,21 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
   );
 
   const [targetLevel, setTargetLevel] = useState(character.level);
-  const [hpMode, setHpMode] = useState<'avg' | 'roll'>('avg');
   const die = hitDieNumber(classData?.hitDie || 'd8');
   const avgHp = Math.floor(die / 2) + 1;
   const conMod = getModifier(character.abilityScores.con);
-  const [rolledHp, setRolledHp] = useState(avgHp);
+
+  const [hpMode, setHpMode] = useState<'avg' | 'roll'>('avg');
+  const [rolledPerLevel, setRolledPerLevel] = useState(avgHp);
   const [asi, setAsi] = useState<Partial<AbilityScores>>({});
+  const asiBudget = 2;
   const [subclassId, setSubclassId] = useState(character.subclassId || '');
   const [choiceNotes, setChoiceNotes] = useState<Record<string, string>>({});
+  const [catalogPicks, setCatalogPicks] = useState<Record<string, string[]>>({});
 
   const goingUp = targetLevel > character.level;
   const goingDown = targetLevel < character.level;
-  const singleStepUp = targetLevel === character.level + 1;
+  const levelsDiff = Math.abs(targetLevel - character.level);
 
   const subclassOptions = classData?.subclasses?.length
     ? classData.subclasses
@@ -58,45 +61,67 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
 
   const subclassLevel =
     classData?.features.find((f) =>
-      /subclase|arquetipo|camino|colegio|dominio|juramento|círculo|tradici[oó]n|origen|patr[oó]n|senda/i.test(
+      /subclase|arquetipo|camino|colegio|dominio|juramento|c[ií]rculo|tradici[oó]n|origen|patr[oó]n/i.test(
         f.name
       )
     )?.level || 3;
 
-  const effectiveSubclassId = subclassId || character.subclassId;
   const needsSubclass =
     goingUp &&
-    !effectiveSubclassId &&
+    !character.subclass &&
     subclassOptions.length > 0 &&
     targetLevel >= subclassLevel;
 
-  const levelsGained = useMemo(() => {
-    if (!goingUp) return [] as number[];
-    const out: number[] = [];
-    for (let l = character.level + 1; l <= targetLevel; l++) out.push(l);
-    return out;
-  }, [character.level, targetLevel, goingUp]);
-
+  /** Rasgos de clase nuevos entre nivel actual+1 y target (solo al subir) */
   const featuresGained = useMemo(() => {
     if (!classData || !goingUp) return [];
-    return classData.features.filter((f) => levelsGained.includes(f.level));
-  }, [classData, levelsGained, goingUp]);
+    const existing = new Set(character.features.map((f) => f.id));
+    return classData.features.filter(
+      (f) => f.level > character.level && f.level <= targetLevel && !existing.has(f.id)
+    );
+  }, [classData, character.features, character.level, targetLevel, goingUp]);
 
   const subclassFeaturesGained = useMemo(() => {
-    if (!goingUp || !effectiveSubclassId) return [];
-    const sub =
-      subclassOptions.find((s) => s.id === effectiveSubclassId) ||
-      classData?.subclasses?.find((s) => s.id === effectiveSubclassId);
+    if (!goingUp) return [];
+    const sid = subclassId || character.subclassId;
+    const sub = subclassOptions.find((s) => s.id === sid);
     if (!sub) return [];
-    return sub.features.filter((f) => levelsGained.includes(f.level));
-  }, [goingUp, effectiveSubclassId, subclassOptions, classData, levelsGained]);
+    const existing = new Set(character.features.map((f) => f.id));
+    return sub.features.filter(
+      (f) => f.level > character.level && f.level <= targetLevel && !existing.has(f.id)
+    );
+  }, [
+    goingUp,
+    subclassId,
+    character.subclassId,
+    character.features,
+    character.level,
+    targetLevel,
+    subclassOptions,
+  ]);
 
-  const asiLevelsHit = levelsGained.filter((l) => isAsiLevel(l));
-  const asiBudget = asiLevelsHit.length * 2;
+  /** ASI levels crossed while going up */
+  const asiLevelsCrossed = useMemo(() => {
+    if (!goingUp) return [];
+    const list: number[] = [];
+    for (let lv = character.level + 1; lv <= targetLevel; lv++) {
+      if (isAsiLevel(lv)) list.push(lv);
+    }
+    return list;
+  }, [goingUp, character.level, targetLevel]);
+
+  const needsAsi = asiLevelsCrossed.length > 0;
+  // Si cruza varios ASI, pedir 2 puntos por cada uno
+  const totalAsiBudget = asiLevelsCrossed.length * asiBudget;
+
+  const hpGainPerLevel =
+    Math.max(1, (hpMode === 'avg' ? avgHp : rolledPerLevel) + conMod);
+  const totalHpGain = goingUp ? hpGainPerLevel * levelsDiff : 0;
+  const estimatedHpLoss = goingDown
+    ? Math.max(1, avgHp + conMod) * levelsDiff
+    : 0;
+
   const asiSpent = Object.values(asi).reduce((s, v) => s + (v || 0), 0);
-
-  const hpGainOne =
-    Math.max(1, (hpMode === 'avg' ? avgHp : rolledHp) + conMod);
 
   const applyAsiPoint = (ability: AbilityScore, delta: number) => {
     setAsi((prev) => {
@@ -105,121 +130,149 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
       const others = Object.entries(prev)
         .filter(([k]) => k !== ability)
         .reduce((s, [, v]) => s + (v || 0), 0);
-      if (others + next > asiBudget) return prev;
+      if (others + next > totalAsiBudget) return prev;
       if (character.abilityScores[ability] + next > 20) return prev;
       return { ...prev, [ability]: next || undefined };
     });
   };
 
+  const inferChoiceKey = (f: { name?: string; choiceKey?: string }) => {
+    if (f.choiceKey) return f.choiceKey;
+    const n = (f.name || '').toLowerCase();
+    if (/estilo de combate|fighting style/.test(n)) return 'fighting-style';
+    if (/metamagia|metamagic/.test(n)) return 'metamagic';
+    if (/maniobra|maneuver/.test(n)) return 'maneuvers';
+    if (/invocaci[oó]n/.test(n)) return 'invocation';
+    if (/bendici[oó]n de pacto|pact boon|pacto de la/.test(n)) return 'pact-boon';
+    return undefined;
+  };
+
+  const toggleCatalogPick = (featureId: string, optionId: string, multi: boolean) => {
+    setCatalogPicks((prev) => {
+      const cur = prev[featureId] || [];
+      if (!multi) return { ...prev, [featureId]: [optionId] };
+      const set = new Set(cur);
+      if (set.has(optionId)) set.delete(optionId);
+      else set.add(optionId);
+      return { ...prev, [featureId]: Array.from(set) };
+    });
+  };
+
   const handleConfirm = () => {
-    if (targetLevel === character.level && subclassId === (character.subclassId || '')) {
-      onClose();
-      return;
-    }
-    if (goingUp && asiBudget > 0 && asiSpent !== asiBudget) {
-      alert(`Debes distribuir exactamente ${asiBudget} puntos de característica (ASI).`);
+    if (needsAsi && asiSpent !== totalAsiBudget) {
+      alert(`Debes distribuir exactamente ${totalAsiBudget} puntos de característica (ASI).`);
       return;
     }
     if (needsSubclass && !subclassId) {
-      alert('Debes elegir una subclase.');
+      alert('Elige una subclase.');
       return;
     }
 
     const sub = subclassOptions.find((s) => s.id === subclassId);
-    let updated = setCharacterLevel(character, classData, raceData, targetLevel, {
-      hpGain: singleStepUp ? hpGainOne : undefined,
-      asi: goingUp && asiBudget > 0 ? asi : undefined,
-      subclassId: subclassId || character.subclassId,
-      subclassName: sub?.name || character.subclass,
+
+    let updated = setCharacterLevel(character, classData, targetLevel, {
+      hpDelta: goingUp ? totalHpGain : undefined,
+      raceData: raceData ? { traits: raceData.traits } : undefined,
+      asi: needsAsi ? asi : undefined,
+      subclassId: needsSubclass ? subclassId : character.subclassId,
+      subclassName: needsSubclass ? sub?.name : character.subclass,
     });
 
-    // Pending choices for new features that require selection
-    if (goingUp) {
-      const pending: PendingChoice[] = [...(character.pendingChoices || [])].filter(
-        (p) => !p.levelGained || p.levelGained <= targetLevel
-      );
-      const notes: string[] = [];
-      for (const f of [...featuresGained, ...subclassFeaturesGained]) {
-        if (!f.requiresChoice) continue;
-        const answer = choiceNotes[f.id]?.trim();
-        if (answer) {
-          notes.push(`${f.name}: ${answer}`);
-          updated = {
-            ...updated,
-            features: updated.features.map((feat) =>
-              feat.id === f.id || feat.name === f.name
-                ? { ...feat, description: `${feat.description}\n\nElección: ${answer}` }
-                : feat
-            ),
-          };
-        } else if (!pending.some((p) => p.featureId === f.id && !p.resolution)) {
-          pending.push({
-            id: crypto.randomUUID(),
-            featureId: f.id,
-            featureName: f.name,
-            description: f.description,
-            choiceHint: f.choiceHint,
-            levelGained: f.level,
-            source: f.source || 'class',
-          });
-        }
+    // Aplicar elecciones a rasgos nuevos
+    const choiceSources = [...featuresGained, ...subclassFeaturesGained];
+    const notes: string[] = [];
+
+    for (const f of choiceSources) {
+      const cKey = inferChoiceKey(f);
+      const picks = catalogPicks[f.id] || [];
+      const answerFromCatalog =
+        cKey && picks.length
+          ? picks
+              .map((id) => getChoiceCatalog(cKey).find((o) => o.id === id)?.name || id)
+              .join(', ')
+          : '';
+      const answer = answerFromCatalog || (choiceNotes[f.id] || '').trim();
+
+      if (cKey === 'metamagic' && picks.length) {
+        const known = new Set([...(character.metamagicKnown || []), ...picks]);
+        updated = { ...updated, metamagicKnown: Array.from(known) };
       }
-      updated = {
-        ...updated,
-        pendingChoices: pending.filter((p) => (p.levelGained || 0) <= targetLevel),
-      };
-      if (notes.length) {
+      if (cKey === 'maneuvers' && picks.length) {
+        const known = new Set([...(character.maneuversKnown || []), ...picks]);
+        updated = { ...updated, maneuversKnown: Array.from(known) };
+      }
+
+      if (answer) {
+        notes.push(`${f.name}: ${answer}`);
         updated = {
           ...updated,
-          notes: [updated.notes || '', '— Elecciones al cambiar de nivel —', ...notes]
-            .filter(Boolean)
-            .join('\n'),
+          features: updated.features.map((feat: CharacterFeature) =>
+            feat.id === f.id || feat.name === f.name
+              ? { ...feat, description: `${feat.description}\n\nElección: ${answer}` }
+              : feat
+          ),
         };
       }
-    } else if (goingDown) {
-      // Drop pending choices above new level
+    }
+
+    // Asegurar rasgos de subclase al elegirla ahora
+    if (needsSubclass && sub) {
+      const already = new Set(updated.features.map((f) => f.id));
+      const toAdd = toCharacterFeatures(
+        sub.features.filter((f) => f.level <= targetLevel && !already.has(f.id)),
+        'subclass',
+        targetLevel
+      );
+      if (toAdd.length) {
+        updated = { ...updated, features: [...updated.features, ...toAdd] };
+      }
+    }
+
+    if (notes.length) {
       updated = {
         ...updated,
-        pendingChoices: (character.pendingChoices || []).filter(
-          (p) => (p.levelGained || 0) <= targetLevel
-        ),
+        notes: [updated.notes || '', '— Elecciones al gestionar niveles —', ...notes]
+          .filter(Boolean)
+          .join('\n'),
       };
     }
 
     onConfirm(updated);
   };
 
-  const featuresLost =
-    goingDown && classData
-      ? classData.features.filter((f) => f.level > targetLevel && f.level <= character.level)
-      : [];
-
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 pb-24 sm:p-4 sm:pb-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-parchment-50 border-2 border-ink-900 rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
-        <div className="sticky top-0 bg-ink-900 text-parchment-50 px-4 py-3 flex items-center justify-between rounded-t-xl z-10">
-          <h2 className="font-display font-bold text-lg">Gestionar niveles</h2>
+      <div className="relative bg-parchment-50 border-2 border-ink-900 rounded-xl w-full max-w-lg max-h-[min(90dvh,calc(100dvh-7rem))] overflow-y-auto shadow-2xl">
+        <div className="bg-ink-900 text-parchment-50 p-4 flex items-center justify-between sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            {goingDown ? (
+              <TrendingDown className="w-5 h-5" />
+            ) : (
+              <TrendingUp className="w-5 h-5" />
+            )}
+            <h2 className="font-display font-bold text-lg">Gestionar niveles</h2>
+          </div>
           <button type="button" onClick={onClose} className="p-1 hover:bg-ink-700 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
-          <section className="bg-white border-2 border-ink-200 rounded-xl p-3">
-            <div className="text-sm text-ink-600 mb-2">
-              Nivel actual: <strong>{character.level}</strong>
-              {character.subclass && (
-                <span className="text-ink-500"> · {character.subclass}</span>
-              )}
-            </div>
-            <label className="block text-sm font-bold mb-1">Nivel objetivo</label>
-            <div className="flex items-center gap-3">
+          <section className="bg-white border border-ink-200 rounded-lg p-3">
+            <h3 className="font-bold text-sm mb-2">Nivel objetivo</h3>
+            <p className="text-xs text-ink-600 mb-2">
+              Actual: <strong>{character.level}</strong> → Objetivo:{' '}
+              <strong>{targetLevel}</strong>
+              {goingUp && ' (subir)'}
+              {goingDown && ' (bajar — se quitarán rasgos de niveles superiores)'}
+              {!goingUp && !goingDown && ' (sin cambio de nivel)'}
+            </p>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="w-10 h-10 rounded-lg bg-ink-200 font-bold text-lg disabled:opacity-40"
-                disabled={targetLevel <= 1}
                 onClick={() => setTargetLevel((l) => Math.max(1, l - 1))}
+                className="px-3 py-1 border-2 border-ink-400 rounded-lg font-bold"
               >
                 −
               </button>
@@ -231,54 +284,55 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
                 onChange={(e) =>
                   setTargetLevel(Math.min(20, Math.max(1, parseInt(e.target.value) || 1)))
                 }
-                className="w-20 text-center text-2xl font-bold border-2 border-ink-800 rounded-lg py-1"
+                className="w-16 text-center px-2 py-1 border-2 border-ink-300 rounded-lg font-bold"
               />
               <button
                 type="button"
-                className="w-10 h-10 rounded-lg bg-ink-200 font-bold text-lg disabled:opacity-40"
-                disabled={targetLevel >= 20}
                 onClick={() => setTargetLevel((l) => Math.min(20, l + 1))}
+                className="px-3 py-1 border-2 border-ink-400 rounded-lg font-bold"
               >
                 +
               </button>
-              {goingUp && (
-                <span className="flex items-center gap-1 text-green-700 text-sm font-medium">
-                  <TrendingUp className="w-4 h-4" /> Subir
-                </span>
-              )}
-              {goingDown && (
-                <span className="flex items-center gap-1 text-amber-700 text-sm font-medium">
-                  <TrendingDown className="w-4 h-4" /> Bajar
-                </span>
-              )}
+              <div className="flex flex-wrap gap-1 ml-2">
+                {[1, 5, 10, 15, 20].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setTargetLevel(n)}
+                    className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                      targetLevel === n ? 'bg-ink-800 text-white' : 'bg-ink-100'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="text-xs text-ink-500 mt-2">
-              Como en D&amp;D Beyond: puedes subir o bajar de nivel. Al bajar se eliminan rasgos,
-              espacios y recursos de los niveles superiores.
-            </p>
           </section>
 
-          {singleStepUp && (
-            <section className="bg-white border-2 border-ink-200 rounded-xl p-3">
-              <h3 className="font-bold text-sm mb-2">Puntos de golpe (+1 nivel)</h3>
+          {goingUp && (
+            <section className="bg-white border border-ink-200 rounded-lg p-3">
+              <h3 className="font-bold text-sm mb-2">
+                Puntos de golpe (+{levelsDiff} nivel{levelsDiff > 1 ? 'es' : ''})
+              </h3>
               <div className="flex gap-2 mb-2">
                 <button
                   type="button"
                   onClick={() => setHpMode('avg')}
-                  className={`px-3 py-1 rounded-lg text-sm border-2 ${
-                    hpMode === 'avg' ? 'border-crimson-600 bg-crimson-50 font-bold' : 'border-ink-200'
+                  className={`px-3 py-1 rounded text-sm ${
+                    hpMode === 'avg' ? 'bg-crimson-600 text-white' : 'bg-ink-100'
                   }`}
                 >
-                  Promedio ({avgHp})
+                  Promedio (+{avgHp}/niv)
                 </button>
                 <button
                   type="button"
                   onClick={() => setHpMode('roll')}
-                  className={`px-3 py-1 rounded-lg text-sm border-2 ${
-                    hpMode === 'roll' ? 'border-crimson-600 bg-crimson-50 font-bold' : 'border-ink-200'
+                  className={`px-3 py-1 rounded text-sm ${
+                    hpMode === 'roll' ? 'bg-crimson-600 text-white' : 'bg-ink-100'
                   }`}
                 >
-                  Tirar {classData?.hitDie || 'd8'}
+                  Tirada 1d{die}/niv
                 </button>
               </div>
               {hpMode === 'roll' && (
@@ -287,15 +341,17 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
                     type="number"
                     min={1}
                     max={die}
-                    value={rolledHp}
+                    value={rolledPerLevel}
                     onChange={(e) =>
-                      setRolledHp(Math.min(die, Math.max(1, parseInt(e.target.value) || 1)))
+                      setRolledPerLevel(
+                        Math.min(die, Math.max(1, parseInt(e.target.value) || 1))
+                      )
                     }
                     className="w-16 px-2 py-1 border rounded text-center"
                   />
                   <button
                     type="button"
-                    onClick={() => setRolledHp(Math.floor(Math.random() * die) + 1)}
+                    onClick={() => setRolledPerLevel(Math.floor(Math.random() * die) + 1)}
                     className="text-xs px-2 py-1 bg-ink-200 rounded"
                   >
                     Aleatorio
@@ -303,175 +359,240 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
                 </div>
               )}
               <p className="text-sm">
-                Ganancia: <strong>+{hpGainOne}</strong> (dado + Con {formatModifier(conMod)})
+                Ganancia total: <strong>+{totalHpGain}</strong> (dado + Con{' '}
+                {formatModifier(conMod)} × {levelsDiff})
+                <br />
+                PG máximos: {character.hitPointMax} → {character.hitPointMax + totalHpGain}
               </p>
             </section>
           )}
 
-          {goingUp && !singleStepUp && (
-            <p className="text-xs bg-amber-50 border border-amber-200 rounded-lg p-2">
-              Al subir varios niveles de golpe, los PG se recalculan con el promedio de dados
-              (+ Con) por cada nivel.
-            </p>
-          )}
-
           {goingDown && (
-            <section className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-sm">
-              <h3 className="font-bold mb-1">Al bajar al nivel {targetLevel}</h3>
-              <ul className="list-disc pl-5 text-xs space-y-1">
-                <li>Se recalculan PG máximos (promedio), espacios de conjuro y bonificador de competencia.</li>
-                <li>Se retiran rasgos de clase/subclase de niveles superiores a {targetLevel}.</li>
-                {featuresLost.length > 0 && (
-                  <li>
-                    Rasgos de clase que se pierden:{' '}
-                    {featuresLost.map((f) => f.name).join(', ')}
-                  </li>
-                )}
-              </ul>
+            <section className="bg-amber-50 border border-amber-300 rounded-lg p-3 text-sm">
+              <p>
+                Al bajar de nivel se recalculan PG (estimación −{estimatedHpLoss}), espacios de
+                conjuro, competencia y se <strong>eliminan rasgos</strong> de niveles superiores a{' '}
+                {targetLevel}.
+              </p>
+              {targetLevel < subclassLevel && character.subclass && (
+                <p className="mt-1 text-amber-900 font-semibold">
+                  También se quitará la subclase ({character.subclass}) al quedar bajo el nivel{' '}
+                  {subclassLevel}.
+                </p>
+              )}
             </section>
           )}
 
-          {goingUp && featuresGained.length > 0 && (
-            <section className="bg-white border-2 border-ink-200 rounded-xl p-3">
-              <h3 className="font-bold text-sm mb-2">Rasgos de clase que obtienes</h3>
-              <ul className="space-y-2">
-                {featuresGained.map((f) => (
-                  <li key={f.id} className="text-sm border border-ink-100 rounded p-2">
-                    <strong>
-                      {f.name}{' '}
-                      <span className="text-ink-500 font-normal">(niv. {f.level})</span>
-                    </strong>
-                    <p className="text-xs text-ink-600 mt-0.5">{f.description}</p>
-                    {f.requiresChoice && (
-                      <input
-                        placeholder={f.choiceHint || 'Anota tu elección…'}
-                        value={choiceNotes[f.id] || ''}
-                        onChange={(e) =>
-                          setChoiceNotes((prev) => ({ ...prev, [f.id]: e.target.value }))
-                        }
-                        className="mt-1 w-full px-2 py-1 border border-amber-300 rounded text-xs bg-amber-50"
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {goingUp && (needsSubclass || subclassOptions.length > 0) && targetLevel >= subclassLevel && (
-            <section className="bg-purple-50 border border-purple-300 rounded-xl p-3">
-              <h3 className="font-bold text-sm mb-2">
-                {needsSubclass ? 'Elige subclase' : 'Subclase'}
-              </h3>
+          {needsSubclass && (
+            <section className="bg-purple-50 border border-purple-300 rounded-lg p-3">
+              <h3 className="font-bold text-sm mb-2">Elegir subclase</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {subclassOptions.map((s) => (
                   <label
                     key={s.id}
-                    className={`flex items-start gap-2 p-2 rounded-lg border-2 cursor-pointer text-sm ${
+                    className={`block p-2 rounded border cursor-pointer text-sm ${
                       subclassId === s.id
-                        ? 'border-crimson-600 bg-white'
-                        : 'border-transparent bg-white/60 hover:border-ink-200'
+                        ? 'border-purple-600 bg-purple-100'
+                        : 'border-ink-200 bg-white'
                     }`}
                   >
                     <input
                       type="radio"
                       name="subclass"
+                      className="mr-2"
                       checked={subclassId === s.id}
                       onChange={() => setSubclassId(s.id)}
                     />
-                    <span>
-                      <strong>{s.name}</strong>
-                      <span className="block text-xs text-ink-600">{s.description}</span>
-                    </span>
+                    <strong>{s.name}</strong>
+                    <p className="text-xs text-ink-600 ml-5">{s.description}</p>
                   </label>
                 ))}
               </div>
             </section>
           )}
 
-          {goingUp && subclassFeaturesGained.length > 0 && (
-            <section className="bg-purple-50 border border-purple-200 rounded-xl p-3">
-              <h3 className="font-bold text-sm mb-2">Rasgos de subclase</h3>
-              <ul className="space-y-2">
-                {subclassFeaturesGained.map((f) => (
-                  <li key={f.id} className="text-sm bg-white rounded p-2 border border-purple-100">
-                    <strong>
-                      {f.name} <span className="text-ink-500 font-normal">(niv. {f.level})</span>
-                    </strong>
-                    <p className="text-xs text-ink-600">{f.description}</p>
-                    {f.requiresChoice && (
-                      <input
-                        placeholder={f.choiceHint || 'Anota tu elección…'}
-                        value={choiceNotes[f.id] || ''}
-                        onChange={(e) =>
-                          setChoiceNotes((prev) => ({ ...prev, [f.id]: e.target.value }))
-                        }
-                        className="mt-1 w-full px-2 py-1 border border-amber-300 rounded text-xs bg-amber-50"
-                      />
-                    )}
-                  </li>
-                ))}
+          {featuresGained.length > 0 && (
+            <section className="bg-white border border-ink-200 rounded-lg p-3">
+              <h3 className="font-bold text-sm mb-2">Nuevos rasgos de clase</h3>
+              <ul className="space-y-2 text-sm">
+                {featuresGained.map((f) => {
+                  const cKey = inferChoiceKey(f);
+                  const catalog = cKey ? getChoiceCatalog(cKey) : [];
+                  const multi =
+                    cKey === 'metamagic' || cKey === 'maneuvers' || cKey === 'invocation';
+                  return (
+                    <li key={f.id} className="border border-ink-100 rounded p-2">
+                      <div className="flex gap-2">
+                        <strong className="flex-1">{f.name}</strong>
+                        <span className="text-[10px] bg-ink-100 px-1 rounded">Niv. {f.level}</span>
+                      </div>
+                      <p className="text-xs text-ink-600 mt-0.5">{f.description}</p>
+                      {(f.requiresChoice || cKey) && (
+                        <div className="mt-1 bg-amber-50 border border-amber-200 rounded p-1.5">
+                          <p className="text-[10px] font-bold text-amber-900">
+                            {cKey
+                              ? CHOICE_CATALOG_LABELS[cKey] || 'Elección'
+                              : f.choiceHint || 'Elección'}
+                          </p>
+                          {catalog.length > 0 ? (
+                            <div className="max-h-32 overflow-y-auto space-y-0.5 mt-1">
+                              {catalog.map((opt: TableOption) => {
+                                const selected = (catalogPicks[f.id] || []).includes(opt.id);
+                                return (
+                                  <label
+                                    key={opt.id}
+                                    className={`flex gap-1.5 text-[11px] cursor-pointer rounded px-1 ${
+                                      selected ? 'bg-amber-100' : ''
+                                    }`}
+                                  >
+                                    <input
+                                      type={multi ? 'checkbox' : 'radio'}
+                                      name={`m-${f.id}`}
+                                      checked={selected}
+                                      onChange={() => toggleCatalogPick(f.id, opt.id, multi)}
+                                      className="mt-0.5"
+                                    />
+                                    <span>
+                                      <strong>{opt.name}</strong>
+                                      {opt.description && (
+                                        <span className="text-ink-600"> — {opt.description}</span>
+                                      )}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <input
+                              placeholder={f.choiceHint || 'Anota tu elección…'}
+                              value={choiceNotes[f.id] || ''}
+                              onChange={(e) =>
+                                setChoiceNotes((prev) => ({ ...prev, [f.id]: e.target.value }))
+                              }
+                              className="mt-1 w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                            />
+                          )}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}
 
-          {goingUp && asiBudget > 0 && (
-            <section className="bg-white border-2 border-ink-200 rounded-xl p-3">
-              <h3 className="font-bold text-sm mb-1">
-                Mejora de característica (ASI)
-              </h3>
-              <p className="text-xs text-ink-600 mb-2">
-                Niveles {asiLevelsHit.join(', ')} · Distribuye {asiBudget} puntos
-                (gastados {asiSpent}/{asiBudget})
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {ABILITIES.map((a) => (
-                  <div key={a} className="text-center border rounded-lg p-2">
-                    <div className="text-[10px] uppercase font-bold">{ABILITY_LABELS[a]}</div>
-                    <div className="text-sm">
-                      {character.abilityScores[a]}
-                      {(asi[a] || 0) > 0 && (
-                        <span className="text-green-700"> +{asi[a]}</span>
+          {subclassFeaturesGained.length > 0 && (
+            <section className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+              <h3 className="font-bold text-sm mb-2">Nuevos rasgos de subclase</h3>
+              <ul className="space-y-2 text-sm">
+                {subclassFeaturesGained.map((f) => {
+                  const cKey = inferChoiceKey(f);
+                  const catalog = cKey ? getChoiceCatalog(cKey) : [];
+                  const multi =
+                    cKey === 'metamagic' || cKey === 'maneuvers' || cKey === 'invocation';
+                  return (
+                    <li key={f.id} className="bg-white border border-purple-100 rounded p-2">
+                      <strong>{f.name}</strong>
+                      <span className="text-[10px] ml-2 bg-purple-100 px-1 rounded">
+                        Niv. {f.level}
+                      </span>
+                      <p className="text-xs text-ink-600">{f.description}</p>
+                      {(f.requiresChoice || cKey) && (
+                        <div className="mt-1">
+                          {catalog.length > 0 ? (
+                            <div className="max-h-28 overflow-y-auto space-y-0.5">
+                              {catalog.map((opt: TableOption) => {
+                                const selected = (catalogPicks[f.id] || []).includes(opt.id);
+                                return (
+                                  <label
+                                    key={opt.id}
+                                    className={`flex gap-1.5 text-[11px] cursor-pointer ${
+                                      selected ? 'bg-purple-100' : ''
+                                    }`}
+                                  >
+                                    <input
+                                      type={multi ? 'checkbox' : 'radio'}
+                                      name={`ms-${f.id}`}
+                                      checked={selected}
+                                      onChange={() => toggleCatalogPick(f.id, opt.id, multi)}
+                                    />
+                                    <span>
+                                      <strong>{opt.name}</strong> — {opt.description}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <input
+                              placeholder={f.choiceHint || 'Anota tu elección…'}
+                              value={choiceNotes[f.id] || ''}
+                              onChange={(e) =>
+                                setChoiceNotes((prev) => ({ ...prev, [f.id]: e.target.value }))
+                              }
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs bg-amber-50"
+                            />
+                          )}
+                        </div>
                       )}
-                    </div>
-                    <div className="flex justify-center gap-1 mt-1">
-                      <button
-                        type="button"
-                        className="w-7 h-7 bg-ink-200 rounded"
-                        onClick={() => applyAsiPoint(a, -1)}
-                      >
-                        −
-                      </button>
-                      <button
-                        type="button"
-                        className="w-7 h-7 bg-ink-200 rounded"
-                        onClick={() => applyAsiPoint(a, 1)}
-                      >
-                        +
-                      </button>
-                    </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {needsAsi && (
+            <section className="bg-amber-50 border border-amber-300 rounded-lg p-3">
+              <h3 className="font-bold text-sm mb-1">Mejora de característica (ASI)</h3>
+              <p className="text-xs text-ink-600 mb-2">
+                Niveles ASI: {asiLevelsCrossed.join(', ')}. Distribuye{' '}
+                <strong>{totalAsiBudget}</strong> puntos. Gastados: {asiSpent}/{totalAsiBudget}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {ABILITIES.map((ab) => (
+                  <div key={ab} className="flex items-center gap-1 bg-white border rounded px-2 py-1">
+                    <span className="text-xs font-bold w-8">{ABILITY_LABELS[ab]}</span>
+                    <span className="text-xs font-mono">
+                      {character.abilityScores[ab] + (asi[ab] || 0)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => applyAsiPoint(ab, -1)}
+                      className="ml-auto px-1 border rounded text-xs"
+                    >
+                      −
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyAsiPoint(ab, 1)}
+                      className="px-1 border rounded text-xs"
+                    >
+                      +
+                    </button>
                   </div>
                 ))}
               </div>
             </section>
           )}
-        </div>
 
-        <div className="sticky bottom-0 bg-parchment-100 border-t-2 border-ink-200 px-4 py-3 flex gap-2 rounded-b-xl">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-2 border-2 border-ink-300 rounded-lg text-sm font-medium"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="flex-1 py-2 bg-crimson-600 text-white rounded-lg text-sm font-bold hover:bg-crimson-700"
-          >
-            Aplicar nivel {targetLevel}
-          </button>
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 border-2 border-ink-400 rounded-lg font-bold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={targetLevel === character.level && !needsSubclass}
+              className="flex-1 py-2.5 bg-crimson-700 text-white rounded-lg font-bold disabled:opacity-40"
+            >
+              Aplicar nivel {targetLevel}
+            </button>
+          </div>
         </div>
       </div>
     </div>
