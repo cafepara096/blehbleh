@@ -144,6 +144,12 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
     if (/maniobra|maneuver/.test(n)) return 'maneuvers';
     if (/invocaci[oó]n/.test(n)) return 'invocation';
     if (/bendici[oó]n de pacto|pact boon|pacto de la/.test(n)) return 'pact-boon';
+    if (/maestr[ií]a con armas/.test(n)) return 'weapon-mastery-melee';
+    if (/conocimiento primigenio/.test(n)) return 'barbarian-skill';
+    if (/golpe brutal/.test(n)) return 'brutal-strike';
+    if (/furia de lo salvaje/.test(n)) return 'wild-heart-rage';
+    if (/aspecto de lo salvaje/.test(n)) return 'wild-heart-aspect';
+    if (/poder de lo salvaje/.test(n)) return 'wild-heart-power';
     return undefined;
   };
 

@@ -140,12 +140,94 @@ export const ELDRITCH_INVOCATIONS: TableOption[] = [
   { id: 'investment-chain', name: 'Inversión de la cadena', description: 'Mejoras a tu familiar de pacto (requisito: pacto de la cadena).' },
 ];
 
+/** Habilidades de bárbaro (elección de competencia) */
+export const BARBARIAN_SKILLS: TableOption[] = [
+  { id: 'athletics', name: 'Atletismo', description: 'Pruebas de Fuerza: trepar, saltar, nadar, empujar.' },
+  { id: 'intimidation', name: 'Intimidación', description: 'Influir mediante amenazas o presencia amenazadora.' },
+  { id: 'nature', name: 'Naturaleza', description: 'Conocimiento de terreno, clima, flora y fauna.' },
+  { id: 'perception', name: 'Percepción', description: 'Detectar criaturas u objetos ocultos, oír y ver detalles.' },
+  { id: 'survival', name: 'Supervivencia', description: 'Seguir rastros, orientarse, cazar, predecir el clima.' },
+  { id: 'animalHandling', name: 'Trato con animales', description: 'Calmar, entrenar o intuir el comportamiento animal.' },
+];
+
+/** Maestría con armas (ejemplos cuerpo a cuerpo; homebrew ampliable) */
+export const WEAPON_MASTERY_MELEE: TableOption[] = [
+  { id: 'greataxe', name: 'Hacha a dos manos', description: 'Maestría típica: Cleaver / similar según mesa.' },
+  { id: 'handaxe', name: 'Hacha de mano', description: 'Ligera, arrojadiza; maestría según arma.' },
+  { id: 'greatsword', name: 'Espada a dos manos', description: 'Pesada, a dos manos.' },
+  { id: 'longsword', name: 'Espada larga', description: 'Versátil.' },
+  { id: 'battleaxe', name: 'Hacha de batalla', description: 'Versátil.' },
+  { id: 'warhammer', name: 'Martillo de guerra', description: 'Versátil.' },
+  { id: 'maul', name: 'Maza a dos manos', description: 'Pesada, a dos manos.' },
+  { id: 'pike', name: 'Pica', description: 'Alcance, pesada.' },
+  { id: 'glaive', name: 'Guja', description: 'Alcance, pesada.' },
+  { id: 'spear', name: 'Lanza', description: 'Arrojadiza, versátil.' },
+  { id: 'javelin', name: 'Jabalina', description: 'Arrojadiza.' },
+  { id: 'dagger', name: 'Daga', description: 'Ligera, arrojadiza, sutil.' },
+];
+
+/** Golpe brutal — opciones PHB 2024 */
+export const BRUTAL_STRIKE_OPTIONS: TableOption[] = [
+  { id: 'forceful', name: 'Golpe enérgico (niv. 9+)', description: 'Empujas al objetivo 4,5 m en línea recta; luego puedes moverte hasta la mitad de tu velocidad hacia él sin provocar ataques de oportunidad.' },
+  { id: 'hampering', name: 'Golpe ralentizador (niv. 9+)', description: 'La velocidad del objetivo se reduce 4,5 m hasta el inicio de tu siguiente turno (solo el más reciente aplica).' },
+  { id: 'staggering', name: 'Golpe abrumador (niv. 13+)', description: 'Desventaja en la siguiente salvación; no puede hacer ataques de oportunidad hasta el inicio de tu siguiente turno.' },
+  { id: 'sundering', name: 'Golpe desgarrador (niv. 13+)', description: 'Antes de tu siguiente turno, el próximo ataque de otra criatura contra el objetivo tiene +5 (solo un +5 por tirada).' },
+];
+
+/** Corazón salvaje — Furia de lo salvaje (al enfurecerse) */
+export const WILD_HEART_RAGE: TableOption[] = [
+  { id: 'eagle', name: 'Águila', description: 'Al enfurecerte puedes Destrabarte y Correr como parte de esa acción adicional. En furia, acción adicional para hacer ambas.' },
+  { id: 'wolf', name: 'Lobo', description: 'Mientras estás enfurecido, tus aliados tienen ventaja en ataques contra enemigos a 1,5 m de ti.' },
+  { id: 'bear', name: 'Oso', description: 'Mientras estás enfurecido, resistencia a todo el daño salvo fuerza, necrótico, psíquico y radiante.' },
+];
+
+/** Corazón salvaje — Aspecto de lo salvaje (niv. 6, cambia en descanso largo) */
+export const WILD_HEART_ASPECT: TableOption[] = [
+  { id: 'owl', name: 'Búho', description: 'Visión en la oscuridad 18 m (o +18 m si ya la tienes).' },
+  { id: 'panther', name: 'Pantera', description: 'Velocidad trepando igual a tu velocidad.' },
+  { id: 'salmon', name: 'Salmón', description: 'Velocidad nadando igual a tu velocidad.' },
+];
+
+/** Corazón salvaje — Poder de lo salvaje (niv. 14, al enfurecerse) */
+export const WILD_HEART_POWER: TableOption[] = [
+  { id: 'ram', name: 'Carnero', description: 'En furia, al acertar cuerpo a cuerpo puedes derribar a una criatura Grande o menor.' },
+  { id: 'hawk', name: 'Halcón', description: 'En furia, velocidad volando igual a la tuya si no llevas armadura.' },
+  { id: 'lion', name: 'León', description: 'En furia, enemigos a 1,5 m tienen desventaja al atacar a otros que no seas tú u otro bárbaro con esta opción.' },
+];
+
+/** Usos de Furia y daño por furia según nivel de bárbaro (PHB 2024) */
+export function getBarbarianRageMax(level: number): number {
+  if (level >= 17) return 6;
+  if (level >= 12) return 5;
+  if (level >= 6) return 4;
+  if (level >= 3) return 3;
+  return 2;
+}
+
+export function getBarbarianRageDamage(level: number): number {
+  if (level >= 16) return 4;
+  if (level >= 9) return 3;
+  return 2;
+}
+
+export function getBarbarianWeaponMasteryCount(level: number): number {
+  if (level >= 10) return 4;
+  if (level >= 4) return 3;
+  return 2;
+}
+
 export type ChoiceCatalogKey =
   | 'fighting-style'
   | 'metamagic'
   | 'maneuvers'
   | 'invocation'
-  | 'pact-boon';
+  | 'pact-boon'
+  | 'barbarian-skill'
+  | 'weapon-mastery-melee'
+  | 'brutal-strike'
+  | 'wild-heart-rage'
+  | 'wild-heart-aspect'
+  | 'wild-heart-power';
 
 export function getChoiceCatalog(key: string): TableOption[] {
   switch (key) {
@@ -159,6 +241,18 @@ export function getChoiceCatalog(key: string): TableOption[] {
       return ELDRITCH_INVOCATIONS;
     case 'pact-boon':
       return PACT_BOONS;
+    case 'barbarian-skill':
+      return BARBARIAN_SKILLS;
+    case 'weapon-mastery-melee':
+      return WEAPON_MASTERY_MELEE;
+    case 'brutal-strike':
+      return BRUTAL_STRIKE_OPTIONS;
+    case 'wild-heart-rage':
+      return WILD_HEART_RAGE;
+    case 'wild-heart-aspect':
+      return WILD_HEART_ASPECT;
+    case 'wild-heart-power':
+      return WILD_HEART_POWER;
     default:
       return [];
   }
@@ -170,4 +264,10 @@ export const CHOICE_CATALOG_LABELS: Record<string, string> = {
   maneuvers: 'Maniobras',
   invocation: 'Invocaciones místicas',
   'pact-boon': 'Bendición de pacto',
+  'barbarian-skill': 'Habilidad de bárbaro',
+  'weapon-mastery-melee': 'Maestría con armas',
+  'brutal-strike': 'Golpe brutal',
+  'wild-heart-rage': 'Furia de lo salvaje',
+  'wild-heart-aspect': 'Aspecto de lo salvaje',
+  'wild-heart-power': 'Poder de lo salvaje',
 };
