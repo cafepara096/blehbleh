@@ -64,10 +64,10 @@ export function BarbarianPanel({ character, onUpdate }: Props) {
   const subName = (character.subclass || '').toLowerCase();
   const isWildHeart = subId === 'wild-heart' || subName.includes('corazón salvaje') || subName.includes('corazon salvaje');
   const isZealot = subId === 'zealot' || subName.includes('fanático') || subName.includes('fanatico');
-  const showBrutal = level >= 9;
+  const hasBrutalStrike = level >= 9;
 
   const [showMastery, setShowMastery] = useState(false);
-  const [showBrutal, setShowBrutalMenu] = useState(false);
+  const [brutalMenuOpen, setBrutalMenuOpen] = useState(false);
 
   const setPrefs = (next: BarbPrefs) => {
     onUpdate({ barbarianPrefs: { ...prefs, ...next } });
@@ -238,7 +238,7 @@ export function BarbarianPanel({ character, onUpdate }: Props) {
       </div>
 
       {/* Golpe brutal */}
-      {showBrutal && (
+      {hasBrutalStrike && (
         <div className="bg-orange-50 border border-orange-400 rounded-lg p-2.5 text-xs">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-bold text-orange-950">Golpe brutal</span>
@@ -247,10 +247,10 @@ export function BarbarianPanel({ character, onUpdate }: Props) {
             </span>
             <button
               type="button"
-              onClick={() => setShowBrutalMenu((v) => !v)}
+              onClick={() => setBrutalMenuOpen((v) => !v)}
               className="underline text-orange-800"
             >
-              {showBrutal ? 'Opciones' : 'Ver'}
+              {brutalMenuOpen ? 'Ocultar' : 'Opciones'}
             </button>
           </div>
           {prefs.lastBrutal && (
@@ -258,7 +258,7 @@ export function BarbarianPanel({ character, onUpdate }: Props) {
               Último: {prefs.lastBrutal}
             </p>
           )}
-          {showBrutal && (
+          {brutalMenuOpen && (
             <div className="mt-1 space-y-1 border-t border-orange-200 pt-1">
               {BRUTAL_STRIKE_OPTIONS.filter((o) => {
                 if (o.id === 'staggering' || o.id === 'sundering') return level >= 13;
