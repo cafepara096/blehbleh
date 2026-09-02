@@ -13,7 +13,6 @@ import { SKILLS } from '../types/dnd';
 import { getModifier, getProficiencyBonus, createEmptyCharacter } from './character';
 import { getFullCasterSlots, getPactSlots, getCasterKindFromClassId, getSorceryPointsMax } from './spellLimits';
 import { SUBCLASSES_2024 } from '../data/subclasses2024';
-import { getBarbarianRageMax } from '../data/featureTables';
 import startingEquipment from '../data/starting-equipment.json';
 import backgroundsData from '../data/backgrounds.json';
 import type { BackgroundData } from '../types/dnd';
@@ -412,34 +411,6 @@ export function refreshFeatureUses(
 ): CharacterFeature[] {
   return features.map((f) => {
     if (!f.uses) return f;
-    // Furia bárbaro — tabla PHB 2024
-    if (f.id === 'barb-rage' || f.name === 'Furia') {
-      const max = getBarbarianRageMax(level);
-      return {
-        ...f,
-        uses: {
-          ...f.uses,
-          max,
-          current: Math.min(f.uses.current, max),
-          recovery: f.uses.recovery || 'short',
-        },
-      };
-    }
-    // Guerrero de los dioses (Fanático)
-    if (f.id === 'ze-3-warrior') {
-      let max = 4;
-      if (level >= 17) max = 7;
-      else if (level >= 12) max = 6;
-      else if (level >= 6) max = 5;
-      return {
-        ...f,
-        uses: {
-          ...f.uses,
-          max,
-          current: Math.min(f.uses.current, max),
-        },
-      };
-    }
     const entry = classData?.features.find((x) => x.id === f.id);
     if (entry?.uses) {
       const max = computeFeatureMaxUses(entry.uses, entry.level, level);
