@@ -592,10 +592,10 @@ export function rebuildFeaturesForLevel(
 
   let subclassFeats: CharacterFeature[] = [];
   if (character.subclassId && classData) {
+    const classKey = classData.id || character.classId || '';
     const subList =
       classData.subclasses ||
-      SUBCLASSES_2024[classData.id] ||
-      SUBCLASSES_2024[character.classId] ||
+      (classKey ? SUBCLASSES_2024[classKey] : undefined) ||
       [];
     const sub = subList.find(
       (s) => s.id === character.subclassId || s.name === character.subclass

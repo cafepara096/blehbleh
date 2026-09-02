@@ -1,195 +1,210 @@
 [
   {
     "id": "barbarian",
-    "name": "Barbaro",
-    "description": "Guerreros que canalizan la furia interior.",
+    "name": "Bárbaro",
+    "description": "Luchadores feroces con una furia primigenia. Canalizan fuerzas del multiverso como furia en combate (PHB 2024).",
     "hitDie": "d12",
     "primaryAbility": "Fuerza",
     "savingThrows": [
       "Fuerza",
-      "Constitucion"
+      "Constitución"
     ],
-    "armorProficiencies": "Armadura ligera, media, escudos",
-    "weaponProficiencies": "Armas simples y marciales",
-    "skillChoices": "Elige 2 habilidades",
+    "armorProficiencies": "Armaduras ligeras y medias, escudos",
+    "weaponProficiencies": "Armas sencillas y marciales",
+    "skillChoices": "Elige 2: Atletismo, Intimidación, Naturaleza, Percepción, Supervivencia, Trato con animales",
     "features": [
       {
         "id": "barb-unarmored",
         "name": "Defensa sin armadura",
         "level": 1,
-        "description": "Sin armadura, CA = 10 + Des + Con (puedes usar escudo).",
+        "description": "Mientras no lleves armadura, tu CA base es 10 + mod. Destreza + mod. Constitución. Obtienes este beneficio aunque uses escudo.",
         "actionType": "passive"
       },
       {
         "id": "barb-rage",
         "name": "Furia",
         "level": 1,
-        "description": "En combate entras en Furia (bonus action). Resistencia a físico, bonus al daño cuerpo a cuerpo, ventaja en Fue. Usos limitados; se recuperan en descanso largo. Más usos al subir de nivel.",
+        "description": "Acción adicional (sin armadura pesada): te enfureces. Resistencia a daño contundente, cortante y perforante; bonificador al daño con ataques de Fuerza (ver tabla); ventaja en pruebas y salvaciones de Fuerza; no puedes concentrarte ni lanzar conjuros. La furia dura hasta el final de tu siguiente turno (máx. 10 minutos) y puedes prolongarla atacando, forzando una salvación o con acción adicional. Usos según nivel; recuperas 1 en descanso corto y todos en descanso largo.\nDaño por furia: niv. 1–8 +2; 9–15 +3; 16–20 +4.\nUsos: 1–2: 2; 3–5: 3; 6–11: 4; 12–16: 5; 17–20: 6.",
         "actionType": "bonus",
         "uses": {
           "max": 2,
-          "recovery": "long",
-          "perLevels": 3,
-          "gainAmount": 1
+          "recovery": "short",
+          "perLevels": 1,
+          "gainAmount": 0
         }
       },
       {
         "id": "barb-weapon-mastery",
         "name": "Maestría con armas",
         "level": 1,
-        "description": "Puedes usar propiedades de maestría de armas (2024) con armas elegidas.",
-        "actionType": "passive"
+        "description": "Puedes usar las propiedades de maestría con 2 tipos de armas cuerpo a cuerpo sencillas o marciales de tu elección. Tras un descanso largo puedes cambiar una elección. El número de tipos aumenta: niv. 4 → 3; niv. 10 → 4.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige los tipos de arma con maestría (p. ej. hacha a dos manos, hacha de mano).",
+        "choiceKey": "weapon-mastery-melee"
       },
       {
         "id": "barb-reckless",
         "name": "Ataque temerario",
         "level": 2,
-        "description": "En tu turno, ventaja en ataques cuerpo a cuerpo de Fuerza; los ataques contra ti tienen ventaja hasta tu próximo turno.",
+        "description": "Al hacer la primera tirada de ataque de tu turno, puedes atacar temerariamente: ventaja en ataques que usen Fuerza hasta el inicio de tu siguiente turno; las tiradas de ataque contra ti también tienen ventaja durante ese tiempo.",
         "actionType": "passive"
       },
       {
-        "id": "barb-sense",
-        "name": "Sentido del peligro",
+        "id": "barb-danger-sense",
+        "name": "Sentir el peligro",
         "level": 2,
-        "description": "Ventaja en salvaciones de Destreza si no estás incapacitado.",
+        "description": "Ventaja en tiradas de salvación de Destreza salvo que estés incapacitado.",
         "actionType": "passive"
+      },
+      {
+        "id": "barb-primal-knowledge",
+        "name": "Conocimiento primigenio",
+        "level": 3,
+        "description": "Ganas competencia en otra habilidad de la lista de bárbaro (Atletismo, Intimidación, Naturaleza, Percepción, Supervivencia o Trato con animales).\nAdemás, mientras estás enfurecido puedes hacer pruebas de Acrobacias, Intimidación, Percepción, Sigilo o Supervivencia usando Fuerza en lugar de la característica habitual.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige 1 habilidad adicional de la lista de bárbaro.",
+        "choiceKey": "barbarian-skill"
       },
       {
         "id": "barb-subclass",
-        "name": "Camino primigenio",
+        "name": "Subclase de bárbaro",
         "level": 3,
-        "description": "Elige subclase (Senda). Ganas rasgos de subclase a 3, 6, 10 y 14.",
+        "description": "Eliges una senda: Árbol del Mundo, Berserker, Corazón salvaje o Fanático. Obtienes sus rasgos a los niveles indicados.",
         "actionType": "passive",
-        "requiresChoice": true
-      },
-      {
-        "id": "barb-primal-know",
-        "name": "Conocimiento primigenio",
-        "level": 3,
-        "description": "Mientras estás en Furia, puedes usar la acción Ayudar como acción adicional.",
-        "actionType": "bonus"
+        "requiresChoice": true,
+        "choiceHint": "Elige tu senda de bárbaro."
       },
       {
         "id": "barb-asi-4",
         "name": "Mejora de característica",
         "level": 4,
-        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos. También a niveles 8, 12 y 16.",
         "actionType": "passive",
         "requiresChoice": true,
-        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+        "choiceHint": "ASI (+2 o +1/+1) o dote."
       },
       {
-        "id": "barb-extra",
-        "name": "Ataque extra",
+        "id": "barb-extra-attack",
+        "name": "Ataque adicional",
         "level": 5,
-        "description": "Cuando tomas la acción Atacar, puedes atacar dos veces.",
+        "description": "Cuando usas la acción Atacar, puedes hacer dos ataques en lugar de uno.",
         "actionType": "passive"
       },
       {
-        "id": "barb-fast",
+        "id": "barb-fast-movement",
         "name": "Movimiento rápido",
         "level": 5,
-        "description": "+10 ft de velocidad si no llevas armadura pesada.",
+        "description": "Tu velocidad aumenta en 3 m (10 ft) si no llevas armadura pesada.",
         "actionType": "passive"
       },
       {
-        "id": "barb-instinctive",
-        "name": "Ataque instintivo",
+        "id": "barb-feral-instinct",
+        "name": "Instinto salvaje",
         "level": 7,
-        "description": "Ventaja en iniciativa. Si estás sorprendido y no incapacitado, puedes actuar normalmente en el primer turno si entras en Furia.",
+        "description": "Tienes ventaja en las tiradas de iniciativa.",
         "actionType": "passive"
       },
       {
-        "id": "barb-feral",
-        "name": "Instinto feral",
+        "id": "barb-instinctive-pounce",
+        "name": "Salto instintivo",
         "level": 7,
-        "description": "Ventaja en iniciativa; no puedes ser sorprendido si no estás incapacitado.",
-        "actionType": "passive"
+        "description": "Como parte de la acción adicional para enfurecerte, puedes moverte hasta la mitad de tu velocidad.",
+        "actionType": "bonus"
       },
       {
         "id": "barb-asi-8",
         "name": "Mejora de característica",
         "level": 8,
-        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos.",
         "actionType": "passive",
         "requiresChoice": true,
-        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+        "choiceHint": "ASI o dote."
       },
       {
-        "id": "barb-crit",
-        "name": "Crítico brutal",
+        "id": "barb-brutal-strike",
+        "name": "Golpe brutal",
         "level": 9,
-        "description": "Extra dado de arma en críticos cuerpo a cuerpo (mejora a niveles superiores).",
-        "actionType": "passive"
+        "description": "Si usas Ataque temerario, puedes renunciar a la ventaja en una tirada de ataque de Fuerza de tu turno (sin desventaja). Si aciertas, el objetivo sufre 1d10 de daño adicional del mismo tipo y eliges un efecto de Golpe brutal.\nOpciones a nivel 9: Golpe enérgico (empujar 4,5 m y moverte hacia el objetivo); Golpe ralentizador (velocidad −4,5 m hasta tu próximo turno).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige el efecto de Golpe brutal al usarlo.",
+        "choiceKey": "brutal-strike"
       },
       {
         "id": "barb-relentless",
         "name": "Furia implacable",
         "level": 11,
-        "description": "Si caes a 0 PG en Furia y no mueres de golpe, puedes hacer salvación de Con para quedar a 1 PG.",
-        "actionType": "passive"
+        "description": "Si tus PG bajan a 0 mientras estás enfurecido y no mueres al instante, puedes hacer una salvación de Constitución CD 10. Si la superas, tus PG pasan a ser el doble de tu nivel de bárbaro. Cada uso posterior en el mismo ciclo aumenta la CD en 5. La CD vuelve a 10 tras un descanso corto o largo.",
+        "actionType": "special"
       },
       {
         "id": "barb-asi-12",
         "name": "Mejora de característica",
         "level": 12,
-        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos.",
         "actionType": "passive",
         "requiresChoice": true,
-        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+        "choiceHint": "ASI o dote."
       },
       {
         "id": "barb-brutal-13",
-        "name": "Golpe brutal",
+        "name": "Golpe brutal mejorado",
         "level": 13,
-        "description": "Cuando puntúas un crítico cuerpo a cuerpo, tiras un dado de arma extra (además del crítico). Mejora a más dados en niveles superiores.",
-        "actionType": "passive"
+        "description": "Nuevas opciones de Golpe brutal: Golpe abrumador (desventaja en la siguiente salvación y sin ataques de oportunidad hasta tu próximo turno); Golpe desgarrador (el siguiente ataque de otra criatura contra el objetivo tiene +5).",
+        "actionType": "passive",
+        "choiceKey": "brutal-strike"
       },
       {
-        "id": "barb-persistent",
+        "id": "barb-persistent-rage",
         "name": "Furia persistente",
         "level": 15,
-        "description": "Tu Furia solo termina si estás inconsciente o la terminas voluntariamente.",
+        "description": "Al tirar iniciativa puedes recuperar todos los usos de Furia (1 vez por descanso largo). Además, la furia dura 10 minutos sin necesitar prolongarla cada asalto; termina si quedas inconsciente o te pones armadura pesada.",
         "actionType": "passive"
       },
       {
         "id": "barb-asi-16",
         "name": "Mejora de característica",
         "level": 16,
-        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos.",
         "actionType": "passive",
         "requiresChoice": true,
-        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+        "choiceHint": "ASI o dote."
       },
       {
         "id": "barb-brutal-17",
         "name": "Golpe brutal mejorado",
         "level": 17,
-        "description": "Los dados extra de Golpe brutal aumentan.",
+        "description": "El daño adicional de Golpe brutal pasa a 2d10. Puedes aplicar dos efectos distintos de Golpe brutal cada vez que lo uses.",
         "actionType": "passive"
       },
       {
-        "id": "barb-might",
-        "name": "Poder indomable",
+        "id": "barb-indomitable-might",
+        "name": "Poderío indómito",
         "level": 18,
-        "description": "Si una prueba de Fuerza es menor que tu Fuerza, puedes usar tu puntuación de Fuerza en su lugar.",
+        "description": "Si el resultado de una prueba de Fuerza o salvación de Fuerza es inferior a tu puntuación de Fuerza, puedes usar esa puntuación en su lugar.",
         "actionType": "passive"
       },
       {
-        "id": "barb-asi-19",
-        "name": "Mejora de característica",
+        "id": "barb-epic-boon",
+        "name": "Don épico",
         "level": 19,
-        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "description": "Obtienes una dote de don épico u otra dote para la que cumplas los requisitos. Se recomienda Don del ataque imparable.",
         "actionType": "passive",
         "requiresChoice": true,
-        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+        "choiceHint": "Elige un don épico o dote."
       },
       {
-        "id": "barb-primal",
-        "name": "Campeón primigenio",
+        "id": "barb-primal-champion",
+        "name": "Campeón primordial",
         "level": 20,
-        "description": "Fue y Con +4 (máx. 24).",
-        "actionType": "passive"
+        "description": "Tus puntuaciones de Fuerza y Constitución aumentan en 4, hasta un máximo de 25.",
+        "actionType": "passive",
+        "abilityBonuses": {
+          "str": 4,
+          "con": 4
+        }
       }
     ]
   },

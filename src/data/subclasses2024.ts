@@ -15,47 +15,206 @@ export type SubclassDef = {
 export const SUBCLASSES_2024: Record<string, SubclassDef[]> = {
   barbarian: [
     {
+      id: 'world-tree',
+      name: 'Senda del Árbol del Mundo',
+      description: 'Conectas con Yggdrasil: vitalidad y transporte dimensional a través de la furia.',
+      features: [
+        {
+          id: 'wt-3',
+          name: 'Vitalidad del Árbol',
+          description:
+            'Oleada de vitalidad: al enfurecerte ganas PG temporales iguales a tu nivel de bárbaro.\nFuerza revitalizante: al inicio de cada uno de tus turnos en furia, eliges otra criatura a 3 m o menos; obtiene PG temporales = 1d6 × tu bonificación de daño por furia. Los PG temporales restantes se desvanecen al terminar la furia.',
+          level: 3,
+          source: 'subclass',
+          actionType: 'passive',
+        },
+        {
+          id: 'wt-6',
+          name: 'Ramas del Árbol',
+          description:
+            'Reacción: cuando una criatura que puedas ver empieza su turno a 9 m o menos mientras estás enfurecido, invocas ramas espectrales. Salvación de Fuerza (CD 8 + mod. Fue + competencia) o se teletransporta a un espacio a 1,5 m de ti (o el más cercano). Luego puedes reducir su velocidad a 0 hasta el final de ese turno.',
+          level: 6,
+          source: 'subclass',
+          actionType: 'reaction',
+        },
+        {
+          id: 'wt-10',
+          name: 'Raíces apaleadoras',
+          description:
+            'En tu turno, el alcance de armas cuerpo a cuerpo pesadas o versátiles aumenta 3 m. Al acertar con ellas en tu turno puedes activar la maestría de derribar o empujar además de otra propiedad de maestría del arma.',
+          level: 10,
+          source: 'subclass',
+          actionType: 'passive',
+        },
+        {
+          id: 'wt-14',
+          name: 'Viajar por el Árbol',
+          description:
+            'Al enfurecerte y como acción adicional en furia, puedes teletransportarte hasta 18 m a un espacio visto.\nUna vez por furia puedes ampliar el teletransporte a 45 m y llevar hasta 6 criaturas voluntarias a 3 m de ti; cada una aparece a 3 m de tu destino.',
+          level: 14,
+          source: 'subclass',
+          actionType: 'bonus',
+        },
+      ],
+    },
+    {
       id: 'berserker',
       name: 'Senda del Berserker',
-      description: 'Furia que estalla en violencia pura.',
+      description: 'Canaliza la furia en violencia indómita.',
       features: [
-        { id: 'ber-3', name: 'Frenesí', description: 'Mientras estás en Furia, puedes hacer un ataque cuerpo a cuerpo como acción adicional. Al terminar la Furia puedes sufrir agotamiento (según reglas de tu mesa/2024).', level: 3, source: 'subclass', actionType: 'bonus' },
-        { id: 'ber-6', name: 'Furia ciega', description: 'Mientras estás en Furia no puedes ser hechizado ni asustado; si ya lo estabas, se suspende hasta que termina la Furia.', level: 6, source: 'subclass', actionType: 'passive' },
-        { id: 'ber-10', name: 'Presencia intimidante', description: 'Puedes asustar a criaturas cercanas usando tu fuerza de voluntad (salvación de Sabiduría).', level: 10, source: 'subclass', actionType: 'action', uses: { max: 1, recovery: 'long' } },
-        { id: 'ber-14', name: 'Retaliación', description: 'Cuando sufres daño de una criatura a 5 ft, puedes usar tu reacción para atacarla cuerpo a cuerpo.', level: 14, source: 'subclass', actionType: 'reaction' },
+        {
+          id: 'ber-3',
+          name: 'Frenesí',
+          description:
+            'Si usas Ataque temerario mientras estás enfurecido, el primer objetivo al que aciertes en tu turno con un ataque de Fuerza sufre daño adicional = 1d6 × tu bonificación de daño por furia (mismo tipo que el arma o ataque sin armas).',
+          level: 3,
+          source: 'subclass',
+          actionType: 'passive',
+        },
+        {
+          id: 'ber-6',
+          name: 'Furia irracional',
+          description:
+            'Inmunidad a los estados asustado y hechizado mientras estás enfurecido. Si ya lo estabas al enfurecerte, el estado termina.',
+          level: 6,
+          source: 'subclass',
+          actionType: 'passive',
+        },
+        {
+          id: 'ber-10',
+          name: 'Represalia',
+          description:
+            'Cuando recibes daño de una criatura a 1,5 m o menos, puedes usar tu reacción para hacer un ataque cuerpo a cuerpo (arma o sin armas) contra ella.',
+          level: 10,
+          source: 'subclass',
+          actionType: 'reaction',
+        },
+        {
+          id: 'ber-14',
+          name: 'Presencia intimidante',
+          description:
+            'Acción adicional: criaturas a tu elección en emanación de 9 m hacen salvación de Sabiduría (CD 8 + mod. Fue + competencia) o quedan asustadas 1 minuto (repiten al final de cada turno). 1 uso por descanso largo; puedes gastar un uso de Furia (sin acción) para recuperarlo.',
+          level: 14,
+          source: 'subclass',
+          actionType: 'bonus',
+          uses: { max: 1, recovery: 'long' },
+        },
       ],
     },
     {
       id: 'wild-heart',
       name: 'Senda del Corazón Salvaje',
-      description: 'Espíritu animal y poderes de la bestia.',
+      description: 'Afinidad con los animales y poder primigenio de las bestias.',
       features: [
-        { id: 'wh-3', name: 'Aspecto animal', description: 'Elige un aspecto (oso, águila, lobo, etc.) que otorga un beneficio en Furia o pasivo.', level: 3, source: 'subclass', requiresChoice: true, choiceHint: 'Elige el aspecto animal.', actionType: 'passive' },
-        { id: 'wh-6', name: 'Aspecto bestial', description: 'Ganas un beneficio adicional al elegir otro aspecto o potenciar el actual.', level: 6, source: 'subclass', requiresChoice: true, choiceHint: 'Elige el aspecto de nivel 6.', actionType: 'passive' },
-        { id: 'wh-10', name: 'Llamada espiritual', description: 'Puedes comunicarte mejor con animales o invocar un efecto espiritual breve.', level: 10, source: 'subclass', actionType: 'action' },
-        { id: 'wh-14', name: 'Poder tótem', description: 'Mientras estás en Furia obtienes un poder mayor ligado a tus aspectos.', level: 14, source: 'subclass', actionType: 'passive' },
-      ],
-    },
-    {
-      id: 'world-tree',
-      name: 'Senda del Árbol del Mundo',
-      description: 'Raíces de Yggdrasil: movilidad y protección.',
-      features: [
-        { id: 'wt-3', name: 'Raíces del Árbol del Mundo', description: 'En Furia puedes anclarte o extender raíces para moverte o restringir enemigos.', level: 3, source: 'subclass', actionType: 'bonus' },
-        { id: 'wt-6', name: 'Ramas guardianas', description: 'Otorgas cobertura o resistencia temporal a aliados cercanos mientras estás en Furia.', level: 6, source: 'subclass', actionType: 'bonus' },
-        { id: 'wt-10', name: 'Viaje por las raíces', description: 'Teletransporte corto a través de raíces místicas.', level: 10, source: 'subclass', actionType: 'bonus', uses: { max: 1, recovery: 'short' } },
-        { id: 'wt-14', name: 'Bastión del Árbol del Mundo', description: 'Aura protectora potente durante la Furia.', level: 14, source: 'subclass', actionType: 'passive' },
+        {
+          id: 'wh-3-rage',
+          name: 'Furia de lo salvaje',
+          description:
+            'Al enfurecerte eliges una opción:\n• Águila: puedes Destrabarte y Correr como parte de la acción adicional de enfurecerte; en furia, acción adicional para ambas.\n• Lobo: mientras estás enfurecido, tus aliados tienen ventaja en ataques contra enemigos a 1,5 m de ti.\n• Oso: resistencia a todo el daño salvo fuerza, necrótico, psíquico y radiante mientras estás enfurecido.',
+          level: 3,
+          source: 'subclass',
+          actionType: 'passive',
+          requiresChoice: true,
+          choiceHint: 'Elige Águila, Lobo u Oso al enfurecerte (puedes cambiar en cada furia).',
+          choiceKey: 'wild-heart-rage',
+        },
+        {
+          id: 'wh-3-speaker',
+          name: 'Portavoz de los animales',
+          description:
+            'Puedes lanzar hablar con los animales y sentidos de la bestia solo como rituales. Sabiduría es tu aptitud mágica.',
+          level: 3,
+          source: 'subclass',
+          actionType: 'passive',
+        },
+        {
+          id: 'wh-6',
+          name: 'Aspecto de lo salvaje',
+          description:
+            'Elige una opción (puedes cambiar tras un descanso largo):\n• Búho: visión en la oscuridad 18 m (o +18 m si ya la tienes).\n• Pantera: velocidad trepando igual a tu velocidad.\n• Salmón: velocidad nadando igual a tu velocidad.',
+          level: 6,
+          source: 'subclass',
+          actionType: 'passive',
+          requiresChoice: true,
+          choiceHint: 'Elige Búho, Pantera o Salmón.',
+          choiceKey: 'wild-heart-aspect',
+        },
+        {
+          id: 'wh-10',
+          name: 'Hablante de la naturaleza',
+          description:
+            'Puedes lanzar comunión con la naturaleza solo como ritual. Sabiduría es tu aptitud mágica.',
+          level: 10,
+          source: 'subclass',
+          actionType: 'passive',
+        },
+        {
+          id: 'wh-14',
+          name: 'Poder de lo salvaje',
+          description:
+            'Al enfurecerte eliges una opción:\n• Carnero: al acertar cuerpo a cuerpo en furia puedes derribar a una criatura Grande o menor.\n• Halcón: velocidad volando igual a la tuya en furia si no llevas armadura.\n• León: enemigos a 1,5 m tienen desventaja al atacar a otros que no seas tú u otro bárbaro con esta opción.',
+          level: 14,
+          source: 'subclass',
+          actionType: 'passive',
+          requiresChoice: true,
+          choiceHint: 'Elige Carnero, Halcón o León al enfurecerte.',
+          choiceKey: 'wild-heart-power',
+        },
       ],
     },
     {
       id: 'zealot',
-      name: 'Senda del Zelote',
-      description: 'Furia sagrada de un dios o ideal.',
+      name: 'Senda del Fanático',
+      description: 'Furia como unión eufórica con una divinidad o panteón.',
       features: [
-        { id: 'ze-3', name: 'Furia divina', description: 'En Furia, tus armas infligen daño radiante o necrótico extra.', level: 3, source: 'subclass', actionType: 'passive' },
-        { id: 'ze-6', name: 'Guerrero del dios', description: 'Ventaja en salvaciones para no morir o bonus al revivir (según implementación de mesa).', level: 6, source: 'subclass', actionType: 'passive' },
-        { id: 'ze-10', name: 'Presencia zelote', description: 'Bonus a intimidar o a tiradas de Carisma relacionadas con tu fe.', level: 10, source: 'subclass', actionType: 'passive' },
-        { id: 'ze-14', name: 'Rabia del fanático', description: 'Puedes seguir combatiendo brevemente con 0 PG mientras estás en Furia.', level: 14, source: 'subclass', actionType: 'passive' },
+        {
+          id: 'ze-3-divine',
+          name: 'Furia divina',
+          description:
+            'En cada uno de tus turnos mientras estás enfurecido, la primera criatura a la que aciertes con arma o ataque sin armas sufre 1d6 + mitad de tu nivel de bárbaro de daño necrótico o radiante (eliges cada vez).',
+          level: 3,
+          source: 'subclass',
+          actionType: 'passive',
+        },
+        {
+          id: 'ze-3-warrior',
+          name: 'Guerrero de los dioses',
+          description:
+            'Reserva de 4d12 para curarte: acción adicional, gasta dados, recuperas PG iguales al total. Se recarga en descanso largo. Máximo de dados: 4 (niv. 3), 5 (niv. 6), 6 (niv. 12), 7 (niv. 17).',
+          level: 3,
+          source: 'subclass',
+          actionType: 'bonus',
+          uses: { max: 4, recovery: 'long', perLevels: 6, gainAmount: 1 },
+        },
+        {
+          id: 'ze-6',
+          name: 'Foco fanático',
+          description:
+            'Una vez por furia, si fallas una salvación puedes repetirla con bonificador igual a tu daño por furia; debes usar el nuevo resultado.',
+          level: 6,
+          source: 'subclass',
+          actionType: 'special',
+        },
+        {
+          id: 'ze-10',
+          name: 'Presencia ferviente',
+          description:
+            'Acción adicional: hasta 10 criaturas a 18 m obtienen ventaja en ataques y salvaciones hasta el inicio de tu siguiente turno. 1 uso por descanso largo; puedes gastar un uso de Furia (sin acción) para recuperarlo.',
+          level: 10,
+          source: 'subclass',
+          actionType: 'bonus',
+          uses: { max: 1, recovery: 'long' },
+        },
+        {
+          id: 'ze-14',
+          name: 'Furia de los dioses',
+          description:
+            'Al enfurecerte puedes adoptar forma de guerrero divino (1 minuto o hasta 0 PG; 1/descanso largo):\n• Resistencia a necrótico, psíquico y radiante.\n• Reacción: si una criatura a 9 m bajara a 0 PG, gastas un uso de Furia y sus PG pasan a tu nivel de bárbaro.\n• Velocidad volando igual a la tuya y puedes levitar.',
+          level: 14,
+          source: 'subclass',
+          actionType: 'special',
+          uses: { max: 1, recovery: 'long' },
+        },
       ],
     },
   ],
