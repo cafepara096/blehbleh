@@ -313,11 +313,15 @@ export function CharacterWizard({ onComplete, onCancel }: Props) {
     }
     if (alignment) character = { ...character, alignment };
     if (equipMode === 'gold') {
+      const goldByClass: Record<string, number> = {
+        barbarian: 75, bard: 100, cleric: 100, druid: 50, fighter: 100,
+        monk: 50, paladin: 100, ranger: 100, rogue: 100, sorcerer: 75,
+        warlock: 100, wizard: 100,
+      };
       const gold =
         packData?.goldAlternative ??
         packData?.gold ??
-        ({ barbarian: 75, bard: 100, cleric: 100, druid: 50, fighter: 100, monk: 50, paladin: 100, ranger: 100, rogue: 100, sorcerer: 75, warlock: 100, wizard: 100 } as Record<string, number>)[classId] ||
-        100;
+        (goldByClass[classId] ?? 100);
       character = {
         ...character,
         inventory: [],
