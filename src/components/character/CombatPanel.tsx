@@ -260,23 +260,24 @@ export function CombatPanel({ character, onUpdate, sections }: Props) {
           classId === 'sorcerer' ||
           className.includes('hechic') ||
           className.includes('sorcerer');
-        const showTables =
-          showSorcery ||
+        const showBattleMaster =
           subId === 'battle-master' ||
           subName.includes('maestro de batalla') ||
-          subName.includes('battle master') ||
-          subId === 'wild-magic' ||
-          subName.includes('magia salvaje') ||
-          subName.includes('wild magic');
-        if (!showSorcery && !showTables) return null;
+          subName.includes('battle master');
+        const showWildMagic =
+          showSorcery &&
+          (subId === 'wild-magic' ||
+            subName.includes('magia salvaje') ||
+            subName.includes('wild magic'));
+        if (!showSorcery && !showBattleMaster) return null;
         return (
           <CollapsibleSection
             title={
               showSorcery
-                ? 'Hechicería y metamagia'
-                : subId === 'battle-master' || subName.includes('maestro de batalla')
-                ? 'Maniobras (Maestro de batalla)'
-                : 'Oleada de magia salvaje'
+                ? showWildMagic
+                  ? 'Hechicería, metamagia y magia salvaje'
+                  : 'Hechicería y metamagia'
+                : 'Maniobras (Maestro de batalla)'
             }
             defaultOpen
             headerClassName="bg-fuchsia-50 border-fuchsia-400"

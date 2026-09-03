@@ -50,10 +50,12 @@ export function FeatureTablesPanel({ character, onUpdate }: Props) {
     subId === 'battle-master' ||
     subName.includes('maestro de batalla') ||
     subName.includes('battle master');
+  // Solo hechicero + subclase magia salvaje
   const isWildMagic =
-    subId === 'wild-magic' ||
-    subName.includes('magia salvaje') ||
-    subName.includes('wild magic');
+    isSorcerer &&
+    (subId === 'wild-magic' ||
+      subName.includes('magia salvaje') ||
+      subName.includes('wild magic'));
 
   const knownMeta = character.metamagicKnown || [];
   const knownMan = character.maneuversKnown || [];

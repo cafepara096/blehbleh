@@ -140,12 +140,92 @@ export const ELDRITCH_INVOCATIONS: TableOption[] = [
   { id: 'investment-chain', name: 'Inversión de la cadena', description: 'Mejoras a tu familiar de pacto (requisito: pacto de la cadena).' },
 ];
 
+
+
+/** Habilidades de bárbaro (elección de competencia) */
+export const BARBARIAN_SKILLS: TableOption[] = [
+  { id: 'athletics', name: 'Atletismo', description: 'Pruebas de Fuerza: trepar, saltar, nadar, empujar.' },
+  { id: 'intimidation', name: 'Intimidación', description: 'Influir mediante amenazas o presencia amenazadora.' },
+  { id: 'nature', name: 'Naturaleza', description: 'Conocimiento de terreno, clima, flora y fauna.' },
+  { id: 'perception', name: 'Percepción', description: 'Detectar criaturas u objetos ocultos.' },
+  { id: 'survival', name: 'Supervivencia', description: 'Seguir rastros, orientarse, cazar.' },
+  { id: 'animalHandling', name: 'Trato con animales', description: 'Calmar, entrenar o intuir animales.' },
+];
+
+/** Maestría con armas cuerpo a cuerpo (ejemplos; ampliables por homebrew) */
+export const WEAPON_MASTERY_MELEE: TableOption[] = [
+  { id: 'greataxe', name: 'Hacha a dos manos', description: 'Arma marcial pesada a dos manos.' },
+  { id: 'handaxe', name: 'Hacha de mano', description: 'Ligera, arrojadiza.' },
+  { id: 'greatsword', name: 'Espada a dos manos', description: 'Pesada, a dos manos.' },
+  { id: 'longsword', name: 'Espada larga', description: 'Versátil.' },
+  { id: 'battleaxe', name: 'Hacha de batalla', description: 'Versátil.' },
+  { id: 'warhammer', name: 'Martillo de guerra', description: 'Versátil.' },
+  { id: 'maul', name: 'Maza a dos manos', description: 'Pesada, a dos manos.' },
+  { id: 'pike', name: 'Pica', description: 'Alcance, pesada.' },
+  { id: 'glaive', name: 'Guja', description: 'Alcance, pesada.' },
+  { id: 'spear', name: 'Lanza', description: 'Arrojadiza, versátil.' },
+];
+
+/** Golpe brutal — opciones PHB 2024 */
+export const BRUTAL_STRIKE_OPTIONS: TableOption[] = [
+  { id: 'forceful', name: 'Golpe enérgico (niv. 9+)', description: 'Empujas al objetivo 4,5 m; puedes moverte hacia él sin provocar OA.' },
+  { id: 'hampering', name: 'Golpe ralentizador (niv. 9+)', description: 'Velocidad del objetivo −4,5 m hasta tu próximo turno.' },
+  { id: 'staggering', name: 'Golpe abrumador (niv. 13+)', description: 'Desventaja en la siguiente salvación; sin ataques de oportunidad.' },
+  { id: 'sundering', name: 'Golpe desgarrador (niv. 13+)', description: 'El próximo ataque de otra criatura contra el objetivo tiene +5.' },
+];
+
+export const WILD_HEART_RAGE: TableOption[] = [
+  { id: 'eagle', name: 'Águila', description: 'Al enfurecerte puedes Destrabarte y Correr; en furia, acción adicional para ambas.' },
+  { id: 'wolf', name: 'Lobo', description: 'Aliados tienen ventaja en ataques contra enemigos a 1,5 m de ti.' },
+  { id: 'bear', name: 'Oso', description: 'Resistencia a casi todo el daño (salvo fuerza, necrótico, psíquico y radiante).' },
+];
+
+export const WILD_HEART_ASPECT: TableOption[] = [
+  { id: 'owl', name: 'Búho', description: 'Visión en la oscuridad 18 m (o +18 m).' },
+  { id: 'panther', name: 'Pantera', description: 'Velocidad trepando = tu velocidad.' },
+  { id: 'salmon', name: 'Salmón', description: 'Velocidad nadando = tu velocidad.' },
+];
+
+export const WILD_HEART_POWER: TableOption[] = [
+  { id: 'ram', name: 'Carnero', description: 'Al acertar cuerpo a cuerpo en furia puedes derribar (Grande o menor).' },
+  { id: 'hawk', name: 'Halcón', description: 'Velocidad volando = la tuya en furia sin armadura.' },
+  { id: 'lion', name: 'León', description: 'Enemigos a 1,5 m tienen desventaja al atacar a otros.' },
+];
+
+
+/** Usos de Furia y daño por furia según nivel de bárbaro (PHB 2024) */
+export function getBarbarianRageMax(level: number): number {
+  if (level >= 17) return 6;
+  if (level >= 12) return 5;
+  if (level >= 6) return 4;
+  if (level >= 3) return 3;
+  return 2;
+}
+
+export function getBarbarianRageDamage(level: number): number {
+  if (level >= 16) return 4;
+  if (level >= 9) return 3;
+  return 2;
+}
+
+export function getBarbarianWeaponMasteryCount(level: number): number {
+  if (level >= 10) return 4;
+  if (level >= 4) return 3;
+  return 2;
+}
+
 export type ChoiceCatalogKey =
   | 'fighting-style'
   | 'metamagic'
   | 'maneuvers'
   | 'invocation'
-  | 'pact-boon';
+  | 'pact-boon'
+  | 'barbarian-skill'
+  | 'weapon-mastery-melee'
+  | 'brutal-strike'
+  | 'wild-heart-rage'
+  | 'wild-heart-aspect'
+  | 'wild-heart-power';
 
 export function getChoiceCatalog(key: string): TableOption[] {
   switch (key) {
@@ -159,6 +239,18 @@ export function getChoiceCatalog(key: string): TableOption[] {
       return ELDRITCH_INVOCATIONS;
     case 'pact-boon':
       return PACT_BOONS;
+    case 'barbarian-skill':
+      return BARBARIAN_SKILLS;
+    case 'weapon-mastery-melee':
+      return WEAPON_MASTERY_MELEE;
+    case 'brutal-strike':
+      return BRUTAL_STRIKE_OPTIONS;
+    case 'wild-heart-rage':
+      return WILD_HEART_RAGE;
+    case 'wild-heart-aspect':
+      return WILD_HEART_ASPECT;
+    case 'wild-heart-power':
+      return WILD_HEART_POWER;
     default:
       return [];
   }
@@ -170,4 +262,10 @@ export const CHOICE_CATALOG_LABELS: Record<string, string> = {
   maneuvers: 'Maniobras',
   invocation: 'Invocaciones místicas',
   'pact-boon': 'Bendición de pacto',
+  'barbarian-skill': 'Habilidad de bárbaro',
+  'weapon-mastery-melee': 'Maestría con armas',
+  'brutal-strike': 'Golpe brutal',
+  'wild-heart-rage': 'Furia de lo salvaje',
+  'wild-heart-aspect': 'Aspecto de lo salvaje',
+  'wild-heart-power': 'Poder de lo salvaje',
 };

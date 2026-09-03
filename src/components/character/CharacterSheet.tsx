@@ -32,6 +32,7 @@ import { ManageLevelsModal } from './ManageLevelsModal';
 import { SubclassPanel } from './SubclassPanel';
 import { SorceryPointsPanel } from './SorceryPointsPanel';
 import { FeatureTablesPanel } from './FeatureTablesPanel';
+import { BarbarianPanel } from './BarbarianPanel';
 import { ConditionsPanel } from './ConditionsPanel';
 import { CampaignNotesPanel } from './CampaignNotesPanel';
 import { exportCharacterPdf } from '../../utils/exportCharacterPdf';
@@ -718,6 +719,7 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
         {activeTab === 'subclass' && (
           <div className="space-y-4">
             <SubclassPanel character={character} onUpdate={(partial) => update(partial)} />
+            <BarbarianPanel character={character} onUpdate={(partial) => update(partial)} />
             <SorceryPointsPanel character={character} onUpdate={(partial) => update(partial)} />
             <FeatureTablesPanel character={character} onUpdate={(partial) => update(partial)} />
           </div>

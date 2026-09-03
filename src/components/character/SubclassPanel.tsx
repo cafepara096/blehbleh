@@ -140,8 +140,12 @@ export function SubclassPanel({ character, onUpdate }: Props) {
       </div>
 
 
-      {(character.subclassId === 'wild-magic' ||
-        (character.subclass || '').toLowerCase().includes('magia salvaje')) && (
+      {((character.classId || '').toLowerCase() === 'sorcerer' ||
+        (character.class || '').toLowerCase().includes('hechic') ||
+        (character.class || '').toLowerCase().includes('sorcerer')) &&
+        (character.subclassId === 'wild-magic' ||
+          (character.subclass || '').toLowerCase().includes('magia salvaje') ||
+          (character.subclass || '').toLowerCase().includes('wild magic')) && (
         <div className="bg-pink-50 border-2 border-pink-400 rounded-xl p-3">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <h4 className="font-bold text-sm text-pink-950">Tabla de oleada / sobrecarga de magia salvaje</h4>

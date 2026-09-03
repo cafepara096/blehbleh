@@ -200,6 +200,14 @@ export interface Character {
   /** Sorcerer (2024): puntos de hechicería — intercambiables con espacios */
   sorceryPoints?: { current: number; max: number };
   /** Metamagia conocida (ids de METAMAGIC_OPTIONS / homebrew) */
+  barbarianPrefs?: {
+    raging?: boolean;
+    weaponMastery?: string[];
+    wildHeartRage?: string;
+    wildHeartAspect?: string;
+    wildHeartPower?: string;
+    lastBrutal?: string;
+  };
   metamagicKnown?: string[];
   /** Maniobras del Maestro de Batalla conocidas */
   maneuversKnown?: string[];

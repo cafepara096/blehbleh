@@ -72,13 +72,37 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
     subclassOptions.length > 0 &&
     targetLevel >= subclassLevel;
 
-  /** Rasgos de clase nuevos entre nivel actual+1 y target (solo al subir) */
+  /** Normaliza nombre para detectar rasgos repetidos (ASI, etc.) */
+  const normName = (n: string) =>
+    n
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{M}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  /** Rasgos de clase nuevos entre nivel actual+1 y target (solo al subir); sin duplicados por id/nombre */
   const featuresGained = useMemo(() => {
     if (!classData || !goingUp) return [];
-    const existing = new Set(character.features.map((f) => f.id));
-    return classData.features.filter(
-      (f) => f.level > character.level && f.level <= targetLevel && !existing.has(f.id)
+    const existingIds = new Set(character.features.map((f) => f.id));
+    const existingNames = new Set(
+      character.features.map((f) => normName(f.name || '')).filter(Boolean)
     );
+    const seenNames = new Set<string>();
+    const out: typeof classData.features = [];
+    for (const f of classData.features) {
+      if (f.level <= character.level || f.level > targetLevel) continue;
+      if (existingIds.has(f.id)) continue;
+      const nn = normName(f.name || '');
+      // ASI / mejora de característica: no listar repetidos; se manejan con presupuesto ASI
+      if (/mejora de caracteristica|ability score improvement|^asi\b/i.test(nn)) {
+        continue;
+      }
+      if (nn && (existingNames.has(nn) || seenNames.has(nn))) continue;
+      if (nn) seenNames.add(nn);
+      out.push(f);
+    }
+    return out;
   }, [classData, character.features, character.level, targetLevel, goingUp]);
 
   const subclassFeaturesGained = useMemo(() => {
@@ -86,10 +110,21 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
     const sid = subclassId || character.subclassId;
     const sub = subclassOptions.find((s) => s.id === sid);
     if (!sub) return [];
-    const existing = new Set(character.features.map((f) => f.id));
-    return sub.features.filter(
-      (f) => f.level > character.level && f.level <= targetLevel && !existing.has(f.id)
+    const existingIds = new Set(character.features.map((f) => f.id));
+    const existingNames = new Set(
+      character.features.map((f) => normName(f.name || '')).filter(Boolean)
     );
+    const seenNames = new Set<string>();
+    const out: typeof sub.features = [];
+    for (const f of sub.features) {
+      if (f.level <= character.level || f.level > targetLevel) continue;
+      if (existingIds.has(f.id)) continue;
+      const nn = normName(f.name || '');
+      if (nn && (existingNames.has(nn) || seenNames.has(nn))) continue;
+      if (nn) seenNames.add(nn);
+      out.push(f);
+    }
+    return out;
   }, [
     goingUp,
     subclassId,
@@ -144,6 +179,12 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
     if (/maniobra|maneuver/.test(n)) return 'maneuvers';
     if (/invocaci[oó]n/.test(n)) return 'invocation';
     if (/bendici[oó]n de pacto|pact boon|pacto de la/.test(n)) return 'pact-boon';
+    if (/maestr[ií]a con armas/.test(n)) return 'weapon-mastery-melee';
+    if (/conocimiento primigenio/.test(n)) return 'barbarian-skill';
+    if (/golpe brutal/.test(n)) return 'brutal-strike';
+    if (/furia de lo salvaje/.test(n)) return 'wild-heart-rage';
+    if (/aspecto de lo salvaje/.test(n)) return 'wild-heart-aspect';
+    if (/poder de lo salvaje/.test(n)) return 'wild-heart-power';
     return undefined;
   };
 
