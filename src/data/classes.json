@@ -1,0 +1,1772 @@
+[
+  {
+    "id": "barbarian",
+    "name": "Bárbaro",
+    "description": "Luchadores feroces con una furia primigenia. Canalizan fuerzas del multiverso como furia en combate (PHB 2024).",
+    "hitDie": "d12",
+    "primaryAbility": "Fuerza",
+    "savingThrows": [
+      "Fuerza",
+      "Constitución"
+    ],
+    "armorProficiencies": "Armaduras ligeras y medias, escudos",
+    "weaponProficiencies": "Armas sencillas y marciales",
+    "skillChoices": "Elige 2: Atletismo, Intimidación, Naturaleza, Percepción, Supervivencia, Trato con animales",
+    "features": [
+      {
+        "id": "barb-unarmored",
+        "name": "Defensa sin armadura",
+        "level": 1,
+        "description": "Mientras no lleves armadura, tu CA base es 10 + mod. Destreza + mod. Constitución. Obtienes este beneficio aunque uses escudo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-rage",
+        "name": "Furia",
+        "level": 1,
+        "description": "Acción adicional (sin armadura pesada): te enfureces. Resistencia a daño contundente, cortante y perforante; bonificador al daño con ataques de Fuerza (ver tabla); ventaja en pruebas y salvaciones de Fuerza; no puedes concentrarte ni lanzar conjuros. La furia dura hasta el final de tu siguiente turno (máx. 10 minutos) y puedes prolongarla atacando, forzando una salvación o con acción adicional. Usos según nivel; recuperas 1 en descanso corto y todos en descanso largo.\nDaño por furia: niv. 1–8 +2; 9–15 +3; 16–20 +4.\nUsos: 1–2: 2; 3–5: 3; 6–11: 4; 12–16: 5; 17–20: 6.",
+        "actionType": "bonus",
+        "uses": {
+          "max": 2,
+          "recovery": "short",
+          "perLevels": 1,
+          "gainAmount": 0
+        }
+      },
+      {
+        "id": "barb-weapon-mastery",
+        "name": "Maestría con armas",
+        "level": 1,
+        "description": "Puedes usar las propiedades de maestría con 2 tipos de armas cuerpo a cuerpo sencillas o marciales de tu elección. Tras un descanso largo puedes cambiar una elección. El número de tipos aumenta: niv. 4 → 3; niv. 10 → 4.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige los tipos de arma con maestría (p. ej. hacha a dos manos, hacha de mano).",
+        "choiceKey": "weapon-mastery-melee"
+      },
+      {
+        "id": "barb-reckless",
+        "name": "Ataque temerario",
+        "level": 2,
+        "description": "Al hacer la primera tirada de ataque de tu turno, puedes atacar temerariamente: ventaja en ataques que usen Fuerza hasta el inicio de tu siguiente turno; las tiradas de ataque contra ti también tienen ventaja durante ese tiempo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-danger-sense",
+        "name": "Sentir el peligro",
+        "level": 2,
+        "description": "Ventaja en tiradas de salvación de Destreza salvo que estés incapacitado.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-primal-knowledge",
+        "name": "Conocimiento primigenio",
+        "level": 3,
+        "description": "Ganas competencia en otra habilidad de la lista de bárbaro (Atletismo, Intimidación, Naturaleza, Percepción, Supervivencia o Trato con animales).\nAdemás, mientras estás enfurecido puedes hacer pruebas de Acrobacias, Intimidación, Percepción, Sigilo o Supervivencia usando Fuerza en lugar de la característica habitual.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige 1 habilidad adicional de la lista de bárbaro.",
+        "choiceKey": "barbarian-skill"
+      },
+      {
+        "id": "barb-subclass",
+        "name": "Subclase de bárbaro",
+        "level": 3,
+        "description": "Eliges una senda: Árbol del Mundo, Berserker, Corazón salvaje o Fanático. Obtienes sus rasgos a los niveles indicados.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige tu senda de bárbaro."
+      },
+      {
+        "id": "barb-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos. También a niveles 8, 12 y 16.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "ASI (+2 o +1/+1) o dote."
+      },
+      {
+        "id": "barb-extra-attack",
+        "name": "Ataque adicional",
+        "level": 5,
+        "description": "Cuando usas la acción Atacar, puedes hacer dos ataques en lugar de uno.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-fast-movement",
+        "name": "Movimiento rápido",
+        "level": 5,
+        "description": "Tu velocidad aumenta en 3 m (10 ft) si no llevas armadura pesada.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-feral-instinct",
+        "name": "Instinto salvaje",
+        "level": 7,
+        "description": "Tienes ventaja en las tiradas de iniciativa.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-instinctive-pounce",
+        "name": "Salto instintivo",
+        "level": 7,
+        "description": "Como parte de la acción adicional para enfurecerte, puedes moverte hasta la mitad de tu velocidad.",
+        "actionType": "bonus"
+      },
+      {
+        "id": "barb-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "ASI o dote."
+      },
+      {
+        "id": "barb-brutal-strike",
+        "name": "Golpe brutal",
+        "level": 9,
+        "description": "Si usas Ataque temerario, puedes renunciar a la ventaja en una tirada de ataque de Fuerza de tu turno (sin desventaja). Si aciertas, el objetivo sufre 1d10 de daño adicional del mismo tipo y eliges un efecto de Golpe brutal.\nOpciones a nivel 9: Golpe enérgico (empujar 4,5 m y moverte hacia el objetivo); Golpe ralentizador (velocidad −4,5 m hasta tu próximo turno).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige el efecto de Golpe brutal al usarlo.",
+        "choiceKey": "brutal-strike"
+      },
+      {
+        "id": "barb-relentless",
+        "name": "Furia implacable",
+        "level": 11,
+        "description": "Si tus PG bajan a 0 mientras estás enfurecido y no mueres al instante, puedes hacer una salvación de Constitución CD 10. Si la superas, tus PG pasan a ser el doble de tu nivel de bárbaro. Cada uso posterior en el mismo ciclo aumenta la CD en 5. La CD vuelve a 10 tras un descanso corto o largo.",
+        "actionType": "special"
+      },
+      {
+        "id": "barb-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "ASI o dote."
+      },
+      {
+        "id": "barb-brutal-13",
+        "name": "Golpe brutal mejorado",
+        "level": 13,
+        "description": "Nuevas opciones de Golpe brutal: Golpe abrumador (desventaja en la siguiente salvación y sin ataques de oportunidad hasta tu próximo turno); Golpe desgarrador (el siguiente ataque de otra criatura contra el objetivo tiene +5).",
+        "actionType": "passive",
+        "choiceKey": "brutal-strike"
+      },
+      {
+        "id": "barb-persistent-rage",
+        "name": "Furia persistente",
+        "level": 15,
+        "description": "Al tirar iniciativa puedes recuperar todos los usos de Furia (1 vez por descanso largo). Además, la furia dura 10 minutos sin necesitar prolongarla cada asalto; termina si quedas inconsciente o te pones armadura pesada.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Obtienes la dote Mejora de característica u otra dote para la que cumplas los requisitos.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "ASI o dote."
+      },
+      {
+        "id": "barb-brutal-17",
+        "name": "Golpe brutal mejorado",
+        "level": 17,
+        "description": "El daño adicional de Golpe brutal pasa a 2d10. Puedes aplicar dos efectos distintos de Golpe brutal cada vez que lo uses.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-indomitable-might",
+        "name": "Poderío indómito",
+        "level": 18,
+        "description": "Si el resultado de una prueba de Fuerza o salvación de Fuerza es inferior a tu puntuación de Fuerza, puedes usar esa puntuación en su lugar.",
+        "actionType": "passive"
+      },
+      {
+        "id": "barb-epic-boon",
+        "name": "Don épico",
+        "level": 19,
+        "description": "Obtienes una dote de don épico u otra dote para la que cumplas los requisitos. Se recomienda Don del ataque imparable.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige un don épico o dote."
+      },
+      {
+        "id": "barb-primal-champion",
+        "name": "Campeón primordial",
+        "level": 20,
+        "description": "Tus puntuaciones de Fuerza y Constitución aumentan en 4, hasta un máximo de 25.",
+        "actionType": "passive",
+        "abilityBonuses": {
+          "str": 4,
+          "con": 4
+        }
+      }
+    ]
+  },
+  {
+    "id": "bard",
+    "name": "Bardo",
+    "description": "Magia a traves del arte e inspiracion.",
+    "hitDie": "d8",
+    "primaryAbility": "Carisma",
+    "savingThrows": [
+      "Destreza",
+      "Carisma"
+    ],
+    "armorProficiencies": "Armadura ligera",
+    "weaponProficiencies": "Armas simples, estoques, espadas",
+    "skillChoices": "Elige 3 habilidades",
+    "spellcasting": {
+      "ability": "cha",
+      "type": "full",
+      "starterSpellIds": [
+        "vicious-mockery"
+      ]
+    },
+    "features": [
+      {
+        "id": "bard-insp",
+        "name": "Inspiración bárdica",
+        "level": 1,
+        "description": "Acción adicional: das un d6 de inspiración a un aliado (1 uso por criatura hasta descanso). Usos = mod. Carisma (mín. 1). El dado mejora a niveles altos.",
+        "actionType": "bonus",
+        "uses": {
+          "max": 3,
+          "recovery": "long"
+        }
+      },
+      {
+        "id": "bard-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Lanzas conjuros de bardo (Carisma). Trucos y conjuros conocidos según nivel. Rituales si tienen la etiqueta.",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-mastery",
+        "name": "Maestría con armas",
+        "level": 1,
+        "description": "Maestría con armas simples o las de tu equipo inicial (2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-rest",
+        "name": "Canción de descanso",
+        "level": 2,
+        "description": "En un descanso corto, aliados que oigan tu música recuperan dados de golpe extra.",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-jack",
+        "name": "Polímata (Jack of All Trades)",
+        "level": 2,
+        "description": "Añades la mitad de tu bonificación de competencia (redondeada abajo) a pruebas de característica en las que no seas competente.",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-sub",
+        "name": "Colegio bárdico",
+        "level": 3,
+        "description": "Elige subclase. Rasgos a 3, 6 y 14 (según colegio).",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "bard-expertise",
+        "name": "Pericia",
+        "level": 3,
+        "description": "Elige 2 habilidades competentes: duplicas la competencia.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "2 habilidades para pericia"
+      },
+      {
+        "id": "bard-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "bard-font",
+        "name": "Fuente de inspiración",
+        "level": 5,
+        "description": "Recuperas usos de Inspiración bárdica en descanso corto o largo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-extra",
+        "name": "Ataque extra",
+        "level": 6,
+        "description": "Algunos colegios (Valor/Danza) otorgan ataque extra; el Saber obtiene Secretos mágicos.",
+        "actionType": "passive"
+      },
+      {
+        "id": "bard-counter",
+        "name": "Contraencanto",
+        "level": 7,
+        "description": "Reacción: gastas un uso de inspiración para intentar interrumpir un efecto de miedo o hechizo sobre un aliado.",
+        "actionType": "reaction"
+      },
+      {
+        "id": "bard-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "bard-expertise2",
+        "name": "Pericia mejorada",
+        "level": 10,
+        "description": "Elige 2 habilidades más para pericia. Secretos mágicos adicionales según nivel.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "bard-secrets",
+        "name": "Secretos mágicos",
+        "level": 10,
+        "description": "Aprendes conjuros de cualquier clase (cantidad según nivel 2024).",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "bard-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "bard-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "bard-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      }
+    ]
+  },
+  {
+    "id": "cleric",
+    "name": "Clerigo",
+    "description": "Poder divino canalizado.",
+    "hitDie": "d8",
+    "primaryAbility": "Sabiduria",
+    "savingThrows": [
+      "Sabiduria",
+      "Carisma"
+    ],
+    "armorProficiencies": "Armadura ligera, media, escudos",
+    "weaponProficiencies": "Armas simples",
+    "skillChoices": "Elige 2 habilidades",
+    "spellcasting": {
+      "ability": "wis",
+      "type": "full",
+      "starterSpellIds": [
+        "sacred-flame",
+        "guidance"
+      ]
+    },
+    "features": [
+      {
+        "id": "cler-search",
+        "name": "Buscador de magia / Orden divina",
+        "level": 1,
+        "description": "Rasgos de orden divina según PHB 2024 (thaumaturgia y opciones de orden).",
+        "actionType": "passive"
+      },
+      {
+        "id": "cler-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Conjuros de clérigo (Sabiduría). Preparas conjuros de tu lista cada día. Trucos según nivel.",
+        "actionType": "passive"
+      },
+      {
+        "id": "cler-divine",
+        "name": "Orden divina / Thaumaturgia",
+        "level": 1,
+        "description": "Rasgos de fe iniciales y competencia con armas/armaduras de clérigo (2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "cler-channel",
+        "name": "Canalizar divinidad",
+        "level": 2,
+        "description": "Canalizas poder divino (usos limitados; se recuperan en descanso corto o largo). Incluye Expulsar no muertos u opciones de dominio.",
+        "actionType": "action",
+        "uses": {
+          "max": 1,
+          "recovery": "short"
+        }
+      },
+      {
+        "id": "cler-sub",
+        "name": "Dominio divino",
+        "level": 3,
+        "description": "Elige dominio (subclase). Conjuros de dominio siempre preparados y rasgos a 3, 6, 17…",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "cler-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "cler-improve-channel",
+        "name": "Canalizar divinidad mejorado",
+        "level": 6,
+        "description": "Más usos de Canalizar divinidad.",
+        "actionType": "passive"
+      },
+      {
+        "id": "cler-blessed",
+        "name": "Golpes bendecidos",
+        "level": 7,
+        "description": "Tus ataques de arma infligen daño radiante extra (escala con nivel).",
+        "actionType": "passive"
+      },
+      {
+        "id": "cler-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "cler-divine-int",
+        "name": "Intervención divina",
+        "level": 10,
+        "description": "Suplicas a tu dios (porcentaje de éxito = nivel de clérigo); se recupera en descanso largo.",
+        "actionType": "action",
+        "uses": {
+          "max": 1,
+          "recovery": "long"
+        }
+      },
+      {
+        "id": "cler-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "cler-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "cler-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "cler-supreme",
+        "name": "Intervención suprema",
+        "level": 20,
+        "description": "La Intervención divina se perfecciona (éxito automático 1/largo según reglas 2024).",
+        "actionType": "passive"
+      }
+    ]
+  },
+  {
+    "id": "druid",
+    "name": "Druida",
+    "description": "Guardianes de la naturaleza.",
+    "hitDie": "d8",
+    "primaryAbility": "Sabiduria",
+    "savingThrows": [
+      "Inteligencia",
+      "Sabiduria"
+    ],
+    "armorProficiencies": "Ligera, media, escudos no metalicos",
+    "weaponProficiencies": "Armas druida",
+    "skillChoices": "Elige 2 habilidades",
+    "spellcasting": {
+      "ability": "wis",
+      "type": "full"
+    },
+    "features": [
+      {
+        "id": "dru-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Conjuros de druida (Sabiduría). Preparas conjuros; puedes usar un foco druídico.",
+        "actionType": "passive"
+      },
+      {
+        "id": "dru-order",
+        "name": "Orden de los druidas",
+        "level": 1,
+        "description": "Idioma druídico / rasgos de orden (2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "dru-wild",
+        "name": "Forma salvaje",
+        "level": 2,
+        "description": "Acción (o bonus según 2024) para transformarte en bestia. Usos limitados; se recuperan en descanso corto o largo. Mejoras al subir de nivel.",
+        "actionType": "bonus",
+        "uses": {
+          "max": 2,
+          "recovery": "short"
+        }
+      },
+      {
+        "id": "dru-sub",
+        "name": "Círculo druídico",
+        "level": 3,
+        "description": "Elige círculo (subclase). Rasgos a 3, 6, 10, 14…",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "drui-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "dru-wild-imp",
+        "name": "Forma salvaje mejorada",
+        "level": 6,
+        "description": "Mejores formas o beneficios según círculo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "drui-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "dru-elemental",
+        "name": "Forma elemental / mejoras",
+        "level": 10,
+        "description": "Opciones potentes de forma o resistencia natural.",
+        "actionType": "passive"
+      },
+      {
+        "id": "drui-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "drui-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "drui-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "dru-arch",
+        "name": "Archidruida",
+        "level": 20,
+        "description": "Forma salvaje ilimitada y rejuvenecimiento (2024).",
+        "actionType": "passive"
+      }
+    ]
+  },
+  {
+    "id": "fighter",
+    "name": "Guerrero",
+    "description": "Maestros del combate marcial.",
+    "hitDie": "d10",
+    "primaryAbility": "Fuerza o Destreza",
+    "savingThrows": [
+      "Fuerza",
+      "Constitucion"
+    ],
+    "armorProficiencies": "Todas, escudos",
+    "weaponProficiencies": "Simples y marciales",
+    "skillChoices": "Elige 2 habilidades",
+    "features": [
+      {
+        "id": "fig-style",
+        "name": "Estilo de combate",
+        "level": 1,
+        "description": "Elige un estilo (Arquería, Defensa, Duelista, Protección, etc.).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Estilo de combate",
+        "choiceKey": "fighting-style"
+      },
+      {
+        "id": "fig-mastery",
+        "name": "Maestría con armas",
+        "level": 1,
+        "description": "Usas maestrías de armas (2024) con armas competentes.",
+        "actionType": "passive"
+      },
+      {
+        "id": "fig-second",
+        "name": "Segundo aliento",
+        "level": 1,
+        "description": "Acción adicional: recuperas 1d10 + nivel de guerrero PG. 1 uso por descanso corto o largo.",
+        "actionType": "bonus",
+        "uses": {
+          "max": 1,
+          "recovery": "short"
+        }
+      },
+      {
+        "id": "fig-action-surge",
+        "name": "Oleada de acción",
+        "level": 2,
+        "description": "En tu turno, una acción adicional. 1 uso (luego más) por descanso corto o largo.",
+        "actionType": "special",
+        "uses": {
+          "max": 1,
+          "recovery": "short"
+        }
+      },
+      {
+        "id": "fig-sub",
+        "name": "Arquetipo marcial",
+        "level": 3,
+        "description": "Elige subclase. Rasgos a 3, 7, 10, 15, 18…",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "fig-weapon-mastery2",
+        "name": "Maestría con armas mejorada",
+        "level": 4,
+        "description": "Puedes usar maestría con más armas.",
+        "actionType": "passive"
+      },
+      {
+        "id": "figh-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "fig-extra",
+        "name": "Ataque extra",
+        "level": 5,
+        "description": "Dos ataques con la acción Atacar. Más ataques a niveles 11 y 20.",
+        "actionType": "passive"
+      },
+      {
+        "id": "figh-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "fig-indom",
+        "name": "Indomable",
+        "level": 9,
+        "description": "Reroleas una salvación fallida. Usos limitados por descanso largo.",
+        "actionType": "special",
+        "uses": {
+          "max": 1,
+          "recovery": "long"
+        }
+      },
+      {
+        "id": "fig-extra2",
+        "name": "Ataque extra (2)",
+        "level": 11,
+        "description": "Tres ataques con la acción Atacar.",
+        "actionType": "passive"
+      },
+      {
+        "id": "figh-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "fig-study",
+        "name": "Estudiar al oponente / Tácticas",
+        "level": 13,
+        "description": "Mejoras tácticas según tu mesa/manual 2024.",
+        "actionType": "passive"
+      },
+      {
+        "id": "fig-indom2",
+        "name": "Indomable adicional",
+        "level": 13,
+        "description": "Usos adicionales de Indomable.",
+        "actionType": "passive"
+      },
+      {
+        "id": "figh-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "figh-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "fig-extra3",
+        "name": "Ataque extra (3)",
+        "level": 20,
+        "description": "Cuatro ataques con la acción Atacar.",
+        "actionType": "passive"
+      }
+    ]
+  },
+  {
+    "id": "monk",
+    "name": "Monje",
+    "description": "Artes marciales y ki.",
+    "hitDie": "d8",
+    "primaryAbility": "Destreza y Sabiduria",
+    "savingThrows": [
+      "Fuerza",
+      "Destreza"
+    ],
+    "armorProficiencies": "Ninguna",
+    "weaponProficiencies": "Simples, espadas cortas",
+    "skillChoices": "Elige 2 habilidades",
+    "features": [
+      {
+        "id": "mnk-martial",
+        "name": "Artes marciales",
+        "level": 1,
+        "description": "Dado de artes marciales en ataques desarmados/armas de monje; acción adicional para golpe desarmado.",
+        "actionType": "bonus"
+      },
+      {
+        "id": "mnk-unarmored",
+        "name": "Defensa sin armadura",
+        "level": 1,
+        "description": "Sin armadura ni escudo, CA = 10 + Des + Sab.",
+        "actionType": "passive"
+      },
+      {
+        "id": "mnk-unarmored-move",
+        "name": "Movimiento sin armadura",
+        "level": 2,
+        "description": "Tu velocidad aumenta mientras no lleves armadura ni escudo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "mnk-focus",
+        "name": "Puntos de enfoque (Focus)",
+        "level": 2,
+        "description": "Puntos de enfoque = nivel de monje. Se gastan en Técnicas (Ráfaga, Defensa paciente, Paso del viento…). Se recuperan en descanso corto o largo.",
+        "actionType": "special"
+      },
+      {
+        "id": "mnk-sub",
+        "name": "Tradición monástica",
+        "level": 3,
+        "description": "Elige subclase. Rasgos a 3, 6, 11, 17.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "monk-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "mnk-extra",
+        "name": "Ataque extra",
+        "level": 5,
+        "description": "Dos ataques con la acción Atacar.",
+        "actionType": "passive"
+      },
+      {
+        "id": "mnk-stunning",
+        "name": "Golpe aturdidor",
+        "level": 5,
+        "description": "Gasta enfoque para forzar salvación de Con o aturdir.",
+        "actionType": "passive"
+      },
+      {
+        "id": "mnk-evasion",
+        "name": "Evasión",
+        "level": 7,
+        "description": "Salvaciones de Des: daño 0 o mitad.",
+        "actionType": "passive"
+      },
+      {
+        "id": "mnk-stillness",
+        "name": "Quietud de la mente",
+        "level": 7,
+        "description": "Acción para terminar el efecto de hechizado sobre ti.",
+        "actionType": "action"
+      },
+      {
+        "id": "monk-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "monk-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "mnk-diamond",
+        "name": "Alma de diamante",
+        "level": 14,
+        "description": "Competencia en todas las salvaciones; gasta enfoque para rerolear.",
+        "actionType": "passive"
+      },
+      {
+        "id": "monk-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "mnk-empty",
+        "name": "Cuerpo vacío",
+        "level": 18,
+        "description": "Invisibilidad o resistencia a todo daño gastando enfoque.",
+        "actionType": "action"
+      },
+      {
+        "id": "monk-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      }
+    ]
+  },
+  {
+    "id": "paladin",
+    "name": "Paladin",
+    "description": "Guerreros de juramento sagrado.",
+    "hitDie": "d10",
+    "primaryAbility": "Fuerza y Carisma",
+    "savingThrows": [
+      "Sabiduria",
+      "Carisma"
+    ],
+    "armorProficiencies": "Todas, escudos",
+    "weaponProficiencies": "Simples y marciales",
+    "skillChoices": "Elige 2 habilidades",
+    "spellcasting": {
+      "ability": "cha",
+      "type": "half"
+    },
+    "features": [
+      {
+        "id": "pal-hands",
+        "name": "Imposición de manos",
+        "level": 1,
+        "description": "Reserva de PG = nivel × 5 para curar o limpiar enfermedades/venenos.",
+        "actionType": "action"
+      },
+      {
+        "id": "pal-sense",
+        "name": "Sentido divino",
+        "level": 1,
+        "description": "Detectas celestiales, fiends y no muertos cercanos (usos = 1 + mod. Carisma).",
+        "actionType": "action"
+      },
+      {
+        "id": "pal-smite",
+        "name": "Castigo divino",
+        "level": 2,
+        "description": "Al golpear con arma, gastas un espacio para daño radiante extra.",
+        "actionType": "passive"
+      },
+      {
+        "id": "pal-style",
+        "name": "Estilo de combate",
+        "level": 2,
+        "description": "Elige estilo de combate.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceKey": "fighting-style"
+      },
+      {
+        "id": "pal-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 2,
+        "description": "Conjuros de paladín (Carisma). Preparación diaria. Espacios de medio lanzador.",
+        "actionType": "passive"
+      },
+      {
+        "id": "pal-sub",
+        "name": "Juramento sagrado",
+        "level": 3,
+        "description": "Elige juramento (subclase). Canalizar divinidad y rasgos de juramento.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "pala-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "pal-extra",
+        "name": "Ataque extra",
+        "level": 5,
+        "description": "Dos ataques con la acción Atacar.",
+        "actionType": "passive"
+      },
+      {
+        "id": "pal-aura",
+        "name": "Aura de protección",
+        "level": 6,
+        "description": "Tú y aliados en el aura añaden tu mod. Carisma a las salvaciones.",
+        "actionType": "passive"
+      },
+      {
+        "id": "pala-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "pal-aura2",
+        "name": "Aura de valor / mejora",
+        "level": 10,
+        "description": "Inmunidad al miedo en el aura (u otra mejora de aura).",
+        "actionType": "passive"
+      },
+      {
+        "id": "pal-radiant",
+        "name": "Toque radiante / mejoras",
+        "level": 11,
+        "description": "Daño radiante extra en ataques de arma.",
+        "actionType": "passive"
+      },
+      {
+        "id": "pala-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "pala-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "pala-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      }
+    ]
+  },
+  {
+    "id": "ranger",
+    "name": "Explorador",
+    "description": "Guerreros de los paramos.",
+    "hitDie": "d10",
+    "primaryAbility": "Destreza y Sabiduria",
+    "savingThrows": [
+      "Fuerza",
+      "Destreza"
+    ],
+    "armorProficiencies": "Ligera, media, escudos",
+    "weaponProficiencies": "Simples y marciales",
+    "skillChoices": "Elige 3 habilidades",
+    "spellcasting": {
+      "ability": "wis",
+      "type": "half"
+    },
+    "features": [
+      {
+        "id": "ran-favored",
+        "name": "Enemigo predilecto / Experto del explorador",
+        "level": 1,
+        "description": "Ventajas contra tipos de criatura o exploración (2024: rasgos de cazador iniciales).",
+        "actionType": "passive"
+      },
+      {
+        "id": "ran-expertise",
+        "name": "Experto del explorador",
+        "level": 1,
+        "description": "Pericia en una habilidad de explorador y otros beneficios de depredador/experto según 2024.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige opciones de experto del explorador."
+      },
+      {
+        "id": "ran-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Conjuros de explorador (Sabiduría). Medio lanzador; conjuros conocidos.",
+        "actionType": "passive"
+      },
+      {
+        "id": "ran-weapon",
+        "name": "Maestría con armas",
+        "level": 1,
+        "description": "Maestría con armas de explorador (2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "ran-style",
+        "name": "Estilo de combate",
+        "level": 2,
+        "description": "Elige estilo de combate.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceKey": "fighting-style"
+      },
+      {
+        "id": "ran-depletion",
+        "name": "Explorador de terreno / Deft Explorer",
+        "level": 2,
+        "description": "Expertise, movimiento o idiomas según implementación 2024.",
+        "actionType": "passive"
+      },
+      {
+        "id": "ran-sub",
+        "name": "Arquetipo de explorador",
+        "level": 3,
+        "description": "Elige subclase. Rasgos a 3, 7, 11, 15.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "rang-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "ran-extra",
+        "name": "Ataque extra",
+        "level": 5,
+        "description": "Dos ataques con la acción Atacar.",
+        "actionType": "passive"
+      },
+      {
+        "id": "ran-land",
+        "name": "Paso sin rastro / movilidad",
+        "level": 6,
+        "description": "Mejoras de movimiento y sigilo en el campo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rang-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "ran-veil",
+        "name": "Velo de la naturaleza / mejoras",
+        "level": 10,
+        "description": "Camuflaje y utilidad de exploración avanzada.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rang-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "rang-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "rang-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      }
+    ]
+  },
+  {
+    "id": "rogue",
+    "name": "Picaro",
+    "description": "Sigilo y ataques precisos.",
+    "hitDie": "d8",
+    "primaryAbility": "Destreza",
+    "savingThrows": [
+      "Destreza",
+      "Inteligencia"
+    ],
+    "armorProficiencies": "Ligera",
+    "weaponProficiencies": "Simples, estoques, espadas cortas",
+    "toolProficiencies": "Herramientas de ladron",
+    "skillChoices": "Elige 4 habilidades",
+    "features": [
+      {
+        "id": "rog-sneak",
+        "name": "Ataque furtivo",
+        "level": 1,
+        "description": "1d6 extra (escala) con arma sutil o a distancia si tienes ventaja o un aliado adyacente al objetivo.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rog-thieves",
+        "name": "Lenguaje de ladrón / herramientas",
+        "level": 1,
+        "description": "Herramientas de ladrón y jerga.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rog-weapon",
+        "name": "Maestría con armas",
+        "level": 1,
+        "description": "Maestría con armas de pícaro (2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "rog-expertise",
+        "name": "Pericia",
+        "level": 1,
+        "description": "Elige 2 competencias (habilidades o herramientas): duplicas la competencia.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "2 pericias"
+      },
+      {
+        "id": "rog-cunning",
+        "name": "Acción astuta",
+        "level": 2,
+        "description": "Acción adicional: Dash, Desengancharse o Esconderse.",
+        "actionType": "bonus"
+      },
+      {
+        "id": "rog-sub",
+        "name": "Arquetipo de pícaro",
+        "level": 3,
+        "description": "Elige subclase. Rasgos a 3, 9, 13, 17.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "rogu-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "rog-uncanny",
+        "name": "Esquiva asombrosa",
+        "level": 5,
+        "description": "Reacción: halves damage de un ataque que puedas ver.",
+        "actionType": "reaction"
+      },
+      {
+        "id": "rog-expertise2",
+        "name": "Pericia (2)",
+        "level": 6,
+        "description": "2 competencias más con pericia.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "rog-evasion",
+        "name": "Evasión",
+        "level": 7,
+        "description": "Salvaciones de Des: daño 0 o mitad.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rogu-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "rog-reliable",
+        "name": "Talento fiable",
+        "level": 11,
+        "description": "En pruebas competentes, trata d20 de 1–9 como 10.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rogu-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "rog-blindsense",
+        "name": "Sentido ciego",
+        "level": 14,
+        "description": "Notas criaturas ocultas o invisibles a 10 ft.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rog-slippery",
+        "name": "Mente escurridiza",
+        "level": 15,
+        "description": "Competencia en salvaciones de Carisma/Sabiduría (según 2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "rogu-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "rog-elusive",
+        "name": "Elusivo",
+        "level": 18,
+        "description": "Los ataques no tienen ventaja contra ti si no estás incapacitado.",
+        "actionType": "passive"
+      },
+      {
+        "id": "rogu-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "rog-stroke",
+        "name": "Golpe de suerte",
+        "level": 20,
+        "description": "Convierte un fallo en golpe o una prueba fallida en 20 (1/corto).",
+        "actionType": "special",
+        "uses": {
+          "max": 1,
+          "recovery": "short"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sorcerer",
+    "name": "Hechicero",
+    "description": "Magia innata.",
+    "hitDie": "d6",
+    "primaryAbility": "Carisma",
+    "savingThrows": [
+      "Constitucion",
+      "Carisma"
+    ],
+    "armorProficiencies": "Ninguna",
+    "weaponProficiencies": "Dagas, dardos, hondas, bastones",
+    "skillChoices": "Elige 2 habilidades",
+    "spellcasting": {
+      "ability": "cha",
+      "type": "full",
+      "starterSpellIds": [
+        "fire-bolt"
+      ]
+    },
+    "features": [
+      {
+        "id": "sor-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Conjuros de hechicero (Carisma). Conjuros conocidos (no preparados). Más trucos que otros lanzadores.",
+        "actionType": "passive"
+      },
+      {
+        "id": "sor-innate",
+        "name": "Magia innata",
+        "level": 1,
+        "description": "Rasgos innatos de hechicero (2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "sor-font",
+        "name": "Fuente de magia",
+        "level": 2,
+        "description": "Puntos de hechicería = nivel. Convierte espacios ↔ SP (niv. 1–5).",
+        "actionType": "special"
+      },
+      {
+        "id": "sor-meta",
+        "name": "Metamagia",
+        "level": 2,
+        "description": "Aprendes opciones de metamagia; gastas SP al aplicarlas. Más opciones al subir de nivel.",
+        "actionType": "special",
+        "optionsChoose": 2,
+        "requiresChoice": true,
+        "choiceKey": "metamagic"
+      },
+      {
+        "id": "sor-sub",
+        "name": "Origen de hechicería",
+        "level": 3,
+        "description": "Elige subclase (origen). Rasgos a 3, 6, 14, 18.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "sorc-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "sorc-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "sor-meta2",
+        "name": "Metamagia adicional",
+        "level": 10,
+        "description": "Aprendes más opciones de metamagia.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceKey": "metamagic"
+      },
+      {
+        "id": "sorc-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "sorc-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "sor-meta3",
+        "name": "Metamagia mayor",
+        "level": 17,
+        "description": "Aprendes más opciones de metamagia.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceKey": "metamagic"
+      },
+      {
+        "id": "sorc-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "sor-fountain",
+        "name": "Alma de hechicería",
+        "level": 20,
+        "description": "Recuperas 4 SP al iniciar un turno con 0 SP (1/corto) o rasgo equivalente 2024.",
+        "actionType": "passive"
+      }
+    ]
+  },
+  {
+    "id": "warlock",
+    "name": "Brujo",
+    "description": "Pacto con un ser de otro mundo.",
+    "hitDie": "d8",
+    "primaryAbility": "Carisma",
+    "savingThrows": [
+      "Sabiduria",
+      "Carisma"
+    ],
+    "armorProficiencies": "Ligera",
+    "weaponProficiencies": "Simples",
+    "skillChoices": "Elige 2 habilidades",
+    "spellcasting": {
+      "ability": "cha",
+      "type": "pact",
+      "starterSpellIds": [
+        "chill-touch"
+      ]
+    },
+    "features": [
+      {
+        "id": "war-pact-magic",
+        "name": "Magia de pacto",
+        "level": 1,
+        "description": "Espacios de pacto (todos del mismo nivel); se recuperan en descanso corto o largo. Conjuros conocidos (Carisma).",
+        "actionType": "passive",
+        "requiresChoice": false
+      },
+      {
+        "id": "war-patron",
+        "name": "Patrón de otro mundo",
+        "level": 1,
+        "description": "Elige patrón (subclase) — en 2024 a menudo a nivel 1 o 3 según mesa; aquí desbloquea rasgos de patrón.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "war-inv",
+        "name": "Invocaciones místicas",
+        "level": 2,
+        "description": "Elige invocaciones; más al subir de nivel. Algunas requieren nivel o pacto.",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Invocaciones",
+        "choiceKey": "invocation"
+      },
+      {
+        "id": "war-pact-boon",
+        "name": "Bendiición de pacto",
+        "level": 3,
+        "description": "Cadena, Hoja o Libro (u opciones 2024 equivalentes).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceKey": "pact-boon"
+      },
+      {
+        "id": "warl-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "warl-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "war-slot5",
+        "name": "Espacios de pacto superiores",
+        "level": 9,
+        "description": "Tus espacios de pacto suben de nivel según la tabla de brujo.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "war-arcanum",
+        "name": "Arcanum místico",
+        "level": 11,
+        "description": "Conjuros de nivel 6+ 1/largo (más a 13, 15, 17).",
+        "actionType": "passive"
+      },
+      {
+        "id": "warl-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "warl-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "warl-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "war-master",
+        "name": "Maestro de lo místico",
+        "level": 20,
+        "description": "Recuperas espacios de pacto en 1 minuto 1/largo.",
+        "actionType": "passive"
+      }
+    ]
+  },
+  {
+    "id": "wizard",
+    "name": "Mago",
+    "description": "Estudio y libro de conjuros.",
+    "hitDie": "d6",
+    "primaryAbility": "Inteligencia",
+    "savingThrows": [
+      "Inteligencia",
+      "Sabiduria"
+    ],
+    "armorProficiencies": "Ninguna",
+    "weaponProficiencies": "Dagas, dardos, hondas, bastones",
+    "skillChoices": "Elige 2 habilidades",
+    "spellcasting": {
+      "ability": "int",
+      "type": "full",
+      "starterSpellIds": [
+        "fire-bolt",
+        "mage-hand"
+      ]
+    },
+    "features": [
+      {
+        "id": "wiz-spell",
+        "name": "Lanzamiento de conjuros",
+        "level": 1,
+        "description": "Libro de conjuros; preparas Int + nivel cada día. Inteligencia. Rituales del libro sin preparar.",
+        "actionType": "passive"
+      },
+      {
+        "id": "wiz-ritual",
+        "name": "Lanzamiento ritual",
+        "level": 1,
+        "description": "Puedes lanzar conjuros de mago con la etiqueta ritual como ritual sin prepararlos, si están en tu libro.",
+        "actionType": "passive"
+      },
+      {
+        "id": "wiz-prep",
+        "name": "Preparación de conjuros",
+        "level": 1,
+        "description": "Preparas conjuros de tu libro (mod. Int + nivel de mago).",
+        "actionType": "passive"
+      },
+      {
+        "id": "wiz-arcane-rec",
+        "name": "Recuperación arcana",
+        "level": 1,
+        "description": "1/día en descanso corto recuperas espacios (suma ≤ mitad de nivel, ningún espacio de nivel 6+).",
+        "actionType": "special",
+        "uses": {
+          "max": 1,
+          "recovery": "long"
+        }
+      },
+      {
+        "id": "wiz-sub",
+        "name": "Tradición arcana",
+        "level": 3,
+        "description": "Elige escuela/tradición (subclase). Rasgos a 3, 6, 10, 14.",
+        "actionType": "passive",
+        "requiresChoice": true
+      },
+      {
+        "id": "wiza-asi-4",
+        "name": "Mejora de característica",
+        "level": 4,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "wiz-expert",
+        "name": "Experto en conjuros",
+        "level": 6,
+        "description": "Mejoras de tradición o libreta (según 2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "wiza-asi-8",
+        "name": "Mejora de característica",
+        "level": 8,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "wiz-memorize",
+        "name": "Memorizar conjuros / flexibilidad",
+        "level": 10,
+        "description": "Cambias conjuros preparados con más facilidad (rasgos 2024).",
+        "actionType": "passive"
+      },
+      {
+        "id": "wiza-asi-12",
+        "name": "Mejora de característica",
+        "level": 12,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "wiza-asi-16",
+        "name": "Mejora de característica",
+        "level": 16,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "wiz-signature",
+        "name": "Conjuros insignia",
+        "level": 18,
+        "description": "Conjuros de nivel 1–2 sin gastar espacio (1 de cada) según reglas.",
+        "actionType": "passive"
+      },
+      {
+        "id": "wiza-asi-19",
+        "name": "Mejora de característica",
+        "level": 19,
+        "description": "Aumenta una característica en 2, o dos en 1 (máx. 20), o elige una dote (2024).",
+        "actionType": "passive",
+        "requiresChoice": true,
+        "choiceHint": "Elige +2 a una característica, +1/+1, o una dote."
+      },
+      {
+        "id": "wiz-master",
+        "name": "Maestro de conjuros",
+        "level": 20,
+        "description": "Espacios de nivel 3 con usos diarios sin gastar casilla (según 2024).",
+        "actionType": "passive"
+      }
+    ]
+  }
+]
