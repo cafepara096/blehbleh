@@ -47,7 +47,6 @@ import { getEquippedPenalties } from '../../utils/equipmentEffects';
 import { useClasses } from '../../hooks/useClasses';
 import { useRaces } from '../../hooks/useRaces';
 import { useSpells } from '../../hooks/useSpells';
-import { useBackgrounds } from '../../hooks/useBackgrounds';
 
 interface Props {
   character: Character;
@@ -66,7 +65,6 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
   const { classes } = useClasses();
   const { races } = useRaces();
   const { spells: spellCatalog } = useSpells();
-  const { backgrounds } = useBackgrounds();
 
   // Usos de rasgos (Oleada de acción, etc.) + conjuros de raza/clase homebrew
   useEffect(() => {
@@ -196,75 +194,32 @@ export function CharacterSheet({ character: initial, onSave, onBack, onExport }:
             onChange={(e) => update({ name: e.target.value })}
             className="text-xl sm:text-2xl font-display font-bold bg-transparent border-b border-transparent hover:border-parchment-400 focus:border-parchment-300 focus:outline-none w-full"
           />
-          <div className="flex flex-wrap gap-2 mt-1 text-sm text-parchment-300">
-            <input
-              value={character.race}
-              onChange={(e) => update({ race: e.target.value })}
-              placeholder="Raza"
-              className="bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none w-24"
-            />
-            <span>•</span>
-            <input
-              value={character.class}
-              onChange={(e) => update({ class: e.target.value })}
-              placeholder="Clase"
-              className="bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none w-28"
-            />
-            {character.subclass && (
+          <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-1 text-sm text-parchment-300 items-center">
+            <span className="font-medium text-parchment-100">{character.race || '—'}</span>
+            <span className="opacity-50">·</span>
+            <span className="font-medium text-parchment-100">
+              {character.class || '—'}
+              {character.subclass ? ` (${character.subclass})` : ''}
+            </span>
+            <span className="opacity-50">·</span>
+            <span>
+              Nivel <strong className="text-parchment-50">{character.level}</strong>
+            </span>
+            {character.background && (
               <>
-                <span>({character.subclass})</span>
+                <span className="opacity-50">·</span>
+                <span>{character.background}</span>
               </>
             )}
-            <span>•</span>
-            <span>Nivel</span>
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={character.level}
-              onChange={(e) =>
-                update({
-                  level: Math.min(20, Math.max(1, parseInt(e.target.value) || 1)),
-                  proficiencyBonus: Math.ceil((parseInt(e.target.value) || 1) / 4) + 1,
-                })
-              }
-              className="w-12 bg-transparent border-b border-transparent hover:border-parchment-500 focus:border-parchment-400 focus:outline-none text-center"
-            />
-            <span>•</span>
-            <select
-              value={
-                backgrounds.some((b) => b.name === character.background || b.id === character.backgroundId)
-                  ? (backgrounds.find((b) => b.name === character.background || b.id === character.backgroundId)?.name || character.background)
-                  : character.background || ''
-              }
-              onChange={(e) => {
-                const name = e.target.value;
-                const bg = backgrounds.find((b) => b.name === name);
-                update({
-                  background: name,
-                  backgroundId: bg?.id,
-                });
-              }}
-              className="bg-ink-900/40 border border-parchment-600/40 rounded px-1 py-0.5 text-sm max-w-[9rem]"
-              title="Trasfondo (catálogo + homebrew)"
-            >
-              <option value="">Trasfondo…</option>
-              {backgrounds.map((b) => (
-                <option key={b.id} value={b.name}>
-                  {b.name}{b.homebrew ? ' (HB)' : ''}
-                </option>
-              ))}
-              {character.background &&
-                !backgrounds.some((b) => b.name === character.background) && (
-                  <option value={character.background}>{character.background} (custom)</option>
-                )}
-            </select>
             {character.alignment && (
               <>
-                <span>•</span>
+                <span className="opacity-50">·</span>
                 <span className="text-parchment-400">{character.alignment}</span>
               </>
             )}
+            <span className="text-[10px] text-parchment-500 w-full sm:w-auto">
+              (especie, clase, nivel y trasfondo: Gestionar niveles / creación)
+            </span>
           </div>
         </div>
 

@@ -57,33 +57,45 @@ export const MARTIAL_RANGED: WeaponPick[] = [
   { id: 'net', name: 'Red', damage: '—', damageType: '—', properties: ['especial', 'arrojadiza (5/15)'], category: 'martial-ranged' },
 ];
 
+export const ALL_WEAPONS: WeaponPick[] = [
+  ...SIMPLE_MELEE,
+  ...SIMPLE_RANGED,
+  ...MARTIAL_MELEE,
+  ...MARTIAL_RANGED,
+];
+
 export function weaponsForChoice(optionName: string): WeaponPick[] {
-  const n = optionName.toLowerCase();
-  if (/marcial/.test(n) && /distancia|ranged|a distancia/.test(n)) return MARTIAL_RANGED;
-  if (/simple/.test(n) && /distancia|ranged|a distancia/.test(n)) return SIMPLE_RANGED;
-  if (/cuerpo a cuerpo|melee/.test(n) && /marcial/.test(n)) return MARTIAL_MELEE;
-  if (/cuerpo a cuerpo|melee/.test(n) && /simple/.test(n)) return SIMPLE_MELEE;
+  const n = optionName.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+  // Filtros específicos primero
+  if (/marcial/.test(n) && /(distancia|ranged|a distancia)/.test(n)) return MARTIAL_RANGED;
+  if (/simple/.test(n) && /(distancia|ranged|a distancia)/.test(n)) return SIMPLE_RANGED;
+  if (/(cuerpo a cuerpo|melee)/.test(n) && /marcial/.test(n)) return MARTIAL_MELEE;
+  if (/(cuerpo a cuerpo|melee)/.test(n) && /simple/.test(n)) return SIMPLE_MELEE;
+  // "Dos armas marciales", "Arma marcial + escudo", etc.
   if (/marcial/.test(n)) return [...MARTIAL_MELEE, ...MARTIAL_RANGED];
-  if (/simple|cualquier arma simple/.test(n)) return [...SIMPLE_MELEE, ...SIMPLE_RANGED];
-  if (/cualquier arma(?! simple)/.test(n)) return [...SIMPLE_MELEE, ...SIMPLE_RANGED, ...MARTIAL_MELEE, ...MARTIAL_RANGED];
+  if (/simple/.test(n)) return [...SIMPLE_MELEE, ...SIMPLE_RANGED];
+  if (/cualquier arma/.test(n)) return ALL_WEAPONS;
   return [];
 }
 
 /** Opciones genéricas que requieren elegir arma(s) del catálogo */
 export function needsWeaponPick(optionName: string): boolean {
-  const n = optionName.toLowerCase();
-  // Ya es un arma concreta conocida
+  const n = optionName.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+  // Placeholders genéricos
   if (
-    /espada|hacha grande|hacha de mano|maza|arco|ballesta|estoque|daga|jabalina|bast[oó]n|cimitarra|guja|alabarda|pica|mayal|lucero|tridente|l[aá]tigo|garrote|hoz|honda|dardo|red|cerbatana|martillo de guerra|pico de guerra/i.test(
+    /arma marcial|armas marciales|arma simple|armas simples|cualquier arma|dos armas marciales|dos armas simples/.test(
       n
-    ) && !/arma marcial|arma simple|cualquier arma|dos armas/.test(n)
+    )
   ) {
-    return false;
+    return weaponsForChoice(optionName).length > 0;
   }
-  return (
-    /arma marcial|armas marciales|arma simple|armas simples|cualquier arma|dos armas/i.test(n) &&
-    weaponsForChoice(optionName).length > 0
-  );
+  // Ya es un arma concreta del catálogo → no hace falta picker
+  const concrete =
+    /\b(espada|hacha|maza|arco|ballesta|estoque|daga|jabalina|baston|cimitarra|guja|alabarda|pica|mayal|lucero|tridente|latigo|garrote|hoz|honda|dardo|red|cerbatana|martillo|pico de guerra|lanza(?! de caball)|flecha|virote)/i.test(
+      n
+    );
+  if (concrete) return false;
+  return false;
 }
 
 /** Cuántas armas hay que elegir (1 o 2) */

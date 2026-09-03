@@ -637,5 +637,236 @@
     "weight": 1,
     "cost": "10 gp",
     "nameEn": null
+  },
+  {
+    "id": "sickle",
+    "name": "Hoz",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma simple. cuerpo a cuerpo. Propiedades: ligera",
+    "damage": "1d4",
+    "damageType": "cortante",
+    "properties": [
+      "ligera"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "dart",
+    "name": "Dardo",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma simple. a distancia. Propiedades: sutil, arrojadiza (20/60)",
+    "damage": "1d4",
+    "damageType": "perforante",
+    "properties": [
+      "sutil",
+      "arrojadiza (20/60)"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "sling",
+    "name": "Honda",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma simple. a distancia. Propiedades: munición (30/120)",
+    "damage": "1d4",
+    "damageType": "contundente",
+    "properties": [
+      "munición (30/120)"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "flail",
+    "name": "Mayal",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo",
+    "damage": "1d8",
+    "damageType": "contundente",
+    "properties": [],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "glaive",
+    "name": "Guja",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo. Propiedades: pesada, alcance, a dos manos",
+    "damage": "1d10",
+    "damageType": "cortante",
+    "properties": [
+      "pesada",
+      "alcance",
+      "a dos manos"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "halberd",
+    "name": "Alabarda",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo. Propiedades: pesada, alcance, a dos manos",
+    "damage": "1d10",
+    "damageType": "cortante",
+    "properties": [
+      "pesada",
+      "alcance",
+      "a dos manos"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "lance",
+    "name": "Lanza de caballería",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo. Propiedades: alcance, especial",
+    "damage": "1d12",
+    "damageType": "perforante",
+    "properties": [
+      "alcance",
+      "especial"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "maul",
+    "name": "Martillo de guerra grande",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo. Propiedades: pesada, a dos manos",
+    "damage": "2d6",
+    "damageType": "contundente",
+    "properties": [
+      "pesada",
+      "a dos manos"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "morningstar",
+    "name": "Lucero del alba",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo",
+    "damage": "1d8",
+    "damageType": "perforante",
+    "properties": [],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "pike",
+    "name": "Pica",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo. Propiedades: pesada, alcance, a dos manos",
+    "damage": "1d10",
+    "damageType": "perforante",
+    "properties": [
+      "pesada",
+      "alcance",
+      "a dos manos"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "trident",
+    "name": "Tridente",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo. Propiedades: arrojadiza (20/60), versátil (1d8)",
+    "damage": "1d6",
+    "damageType": "perforante",
+    "properties": [
+      "arrojadiza (20/60)",
+      "versátil (1d8)"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "war-pick",
+    "name": "Pico de guerra",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo",
+    "damage": "1d8",
+    "damageType": "perforante",
+    "properties": [],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "whip",
+    "name": "Látigo",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. cuerpo a cuerpo. Propiedades: sutil, alcance",
+    "damage": "1d4",
+    "damageType": "cortante",
+    "properties": [
+      "sutil",
+      "alcance"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "blowgun",
+    "name": "Cerbatana",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. a distancia. Propiedades: munición (25/100), de carga",
+    "damage": "1",
+    "damageType": "perforante",
+    "properties": [
+      "munición (25/100)",
+      "de carga"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "hand-crossbow",
+    "name": "Ballesta de mano",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. a distancia. Propiedades: munición (30/120), ligera, de carga",
+    "damage": "1d6",
+    "damageType": "perforante",
+    "properties": [
+      "munición (30/120)",
+      "ligera",
+      "de carga"
+    ],
+    "weight": null,
+    "cost": null
+  },
+  {
+    "id": "net",
+    "name": "Red",
+    "type": "weapon",
+    "rarity": "common",
+    "description": "Arma marcial. a distancia. Propiedades: especial, arrojadiza (5/15)",
+    "properties": [
+      "especial",
+      "arrojadiza (5/15)"
+    ],
+    "weight": null,
+    "cost": null
   }
 ]
