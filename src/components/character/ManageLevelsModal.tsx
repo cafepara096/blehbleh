@@ -46,7 +46,6 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
   const [asi, setAsi] = useState<Partial<AbilityScores>>({});
   const asiBudget = 2;
   const [subclassId, setSubclassId] = useState(character.subclassId || '');
-  const [choiceNotes, setChoiceNotes] = useState<Record<string, string>>({});
   const [catalogPicks, setCatalogPicks] = useState<Record<string, string[]>>({});
 
   const goingUp = targetLevel > character.level;
@@ -241,7 +240,7 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
               .map((id) => getChoiceCatalog(cKey).find((o) => o.id === id)?.name || id)
               .join(', ')
           : '';
-      const answer = answerFromCatalog || (choiceNotes[f.id] || '').trim();
+      const answer = answerFromCatalog;
 
       if (cKey === 'metamagic' && picks.length) {
         const known = new Set([...(character.metamagicKnown || []), ...picks]);
