@@ -194,22 +194,25 @@ export function ActionsPanel({ character, onUpdate, sections }: Props) {
     featureId: string
   ) => {
     const used = uses.max - uses.current;
+    const maxShow = Math.min(uses.max, 12);
     return (
-      <div className="flex flex-col items-center gap-1 shrink-0">
-        <div className="flex flex-wrap gap-1 justify-center max-w-[88px]">
-          {Array.from({ length: uses.max }).map((_, i) => {
+      <div className="flex flex-col items-center gap-1 shrink-0 min-w-[4.5rem]">
+        <div className="flex flex-wrap gap-1 justify-center max-w-[7rem]">
+          {Array.from({ length: maxShow }).map((_, i) => {
             const isUsed = i < used;
             return (
               <button
                 key={i}
                 type="button"
-                title={isUsed ? 'Marcar como disponible' : 'Marcar como usado'}
+                title={isUsed ? 'Marcar como disponible' : 'Gastar uso'}
                 onClick={() => (isUsed ? restoreUse(featureId) : spendUse(featureId))}
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center text-[10px] font-bold transition-colors ${
                   isUsed
-                    ? 'bg-ink-800 border-ink-900 text-white'
-                    : 'bg-white border-ink-600 hover:bg-ink-100 text-transparent'
+                    ? 'bg-crimson-700 border-crimson-900 text-white'
+                    : 'bg-white border-ink-600 hover:bg-ink-100'
                 }`}
+                aria-checked={!isUsed}
+                role="checkbox"
               >
                 {isUsed ? '✓' : ''}
               </button>

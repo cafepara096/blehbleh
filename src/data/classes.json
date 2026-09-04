@@ -161,7 +161,11 @@
         "name": "Furia persistente",
         "level": 15,
         "description": "Al tirar iniciativa puedes recuperar todos los usos de Furia (1 vez por descanso largo). Además, la furia dura 10 minutos sin necesitar prolongarla cada asalto; termina si quedas inconsciente o te pones armadura pesada.",
-        "actionType": "passive"
+        "actionType": "passive",
+        "uses": {
+          "max": 2,
+          "recovery": "short"
+        }
       },
       {
         "id": "barb-asi-16",

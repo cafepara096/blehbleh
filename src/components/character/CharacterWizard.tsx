@@ -191,7 +191,16 @@ export function CharacterWizard({ onComplete, onCancel }: Props) {
   };
 
   const setScore = (ab: AbilityScore, value: number) => {
-    setBaseScores((prev) => ({ ...prev, [ab]: Math.max(3, Math.min(18, value)) }));
+    setBaseScores((prev) => {
+      if (abilityMethod === 'pointbuy') {
+        // PHB point buy: cada puntuación entre 8 y 15; total coste ≤ 27
+        const clamped = Math.max(8, Math.min(15, value));
+        const trial = { ...prev, [ab]: clamped };
+        if (pointBuyTotal(trial) > 27) return prev;
+        return trial;
+      }
+      return { ...prev, [ab]: Math.max(3, Math.min(18, value)) };
+    });
   };
 
   const assignArray = (ab: AbilityScore, val: number | null) => {

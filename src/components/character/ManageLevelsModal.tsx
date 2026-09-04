@@ -98,6 +98,15 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
       if (/mejora de caracteristica|ability score improvement|^asi\b/i.test(nn)) {
         continue;
       }
+      // Elegir subclase/camino: se maneja con el selector de subclase, no texto libre
+      if (
+        /^(subclase|arquetipo|camino|colegio|dominio|juramento|circulo|tradicion|origen de|patron)/i.test(
+          nn
+        ) ||
+        /subclase de |elige (tu |una )?subclase|consigues una subclase/i.test(nn)
+      ) {
+        continue;
+      }
       if (nn && (existingNames.has(nn) || seenNames.has(nn))) continue;
       if (nn) seenNames.add(nn);
       out.push(f);
@@ -282,9 +291,9 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 pb-24 sm:p-4 sm:pb-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 pb-24 sm:pb-4 overflow-x-hidden">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-parchment-50 border-2 border-ink-900 rounded-xl w-full max-w-lg max-h-[min(90dvh,calc(100dvh-7rem))] overflow-y-auto shadow-2xl">
+      <div className="relative bg-parchment-50 border-2 border-ink-900 rounded-xl w-full max-w-lg max-h-[min(90dvh,calc(100dvh-7rem))] overflow-y-auto overflow-x-hidden shadow-2xl break-words">
         <div className="bg-ink-900 text-parchment-50 p-4 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-2">
             {goingDown ? (
@@ -463,12 +472,12 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
                     cKey === 'metamagic' || cKey === 'maneuvers' || cKey === 'invocation';
                   return (
                     <li key={f.id} className="border border-ink-100 rounded p-2">
-                      <div className="flex gap-2">
-                        <strong className="flex-1">{f.name}</strong>
+                      <div className="flex flex-wrap gap-2 items-start min-w-0">
+                        <strong className="flex-1 min-w-0 break-words">{f.name}</strong>
                         <span className="text-[10px] bg-ink-100 px-1 rounded">Niv. {f.level}</span>
                       </div>
-                      <p className="text-xs text-ink-600 mt-0.5">{f.description}</p>
-                      {(f.requiresChoice || cKey) && (
+                      <p className="text-xs text-ink-600 mt-0.5 break-words whitespace-pre-wrap">{f.description}</p>
+                      {(catalog.length > 0) && (
                         <div className="mt-1 bg-amber-50 border border-amber-200 rounded p-1.5">
                           <p className="text-[10px] font-bold text-amber-900">
                             {cKey
@@ -503,16 +512,7 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
                                 );
                               })}
                             </div>
-                          ) : (
-                            <input
-                              placeholder={f.choiceHint || 'Anota tu elección…'}
-                              value={choiceNotes[f.id] || ''}
-                              onChange={(e) =>
-                                setChoiceNotes((prev) => ({ ...prev, [f.id]: e.target.value }))
-                              }
-                              className="mt-1 w-full px-2 py-1 border border-amber-300 rounded text-xs"
-                            />
-                          )}
+                          ) : null}
                         </div>
                       )}
                     </li>
@@ -537,8 +537,8 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
                       <span className="text-[10px] ml-2 bg-purple-100 px-1 rounded">
                         Niv. {f.level}
                       </span>
-                      <p className="text-xs text-ink-600">{f.description}</p>
-                      {(f.requiresChoice || cKey) && (
+                      <p className="text-xs text-ink-600 break-words whitespace-pre-wrap">{f.description}</p>
+                      {(catalog.length > 0) && (
                         <div className="mt-1">
                           {catalog.length > 0 ? (
                             <div className="max-h-28 overflow-y-auto space-y-0.5">
@@ -564,16 +564,7 @@ export function ManageLevelsModal({ character, onConfirm, onClose }: Props) {
                                 );
                               })}
                             </div>
-                          ) : (
-                            <input
-                              placeholder={f.choiceHint || 'Anota tu elección…'}
-                              value={choiceNotes[f.id] || ''}
-                              onChange={(e) =>
-                                setChoiceNotes((prev) => ({ ...prev, [f.id]: e.target.value }))
-                              }
-                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs bg-amber-50"
-                            />
-                          )}
+                          ) : null}
                         </div>
                       )}
                     </li>
